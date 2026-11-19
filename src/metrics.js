@@ -4,6 +4,11 @@ export const meters = {
   latency: new Float64Array(BUCKETS.length + 1),
   requests: 0,
   errors: 0,
+  tokensIn: 0,
+  tokensOut: 0,
+  queueWaits: 0,
+  queueWaitMs: 0,
+  aborts: 0,
   byStatus: new Map(),
   byModel: new Map(),
   byClient: new Map(),
@@ -11,6 +16,28 @@ export const meters = {
   byError: new Map(),
   startedAt: Date.now()
 };
+
+let lastTick = Date.now();
+const loopLag = { ms: 0 };
+setInterval(() => {
+  const now = Date.now();
+  loopLag.ms = Math.max(0, now - lastTick - 1000);
+  lastTick = now;
+}, 1000).unref();
+
+export function addTokens(tin, tout) {
+  meters.tokensIn += tin || 0;
+  meters.tokensOut += tout || 0;
+}
+
+export function noteQueueWait(ms) {
+  meters.queueWaits += 1;
+  meters.queueWaitMs += ms;
+}
+
+export function noteAbort() {
+  meters.aborts += 1;
+}
 
 function bump(map, key, n = 1) {
   if (!key) return;
@@ -64,6 +91,11 @@ export function snapshot() {
     p50: percentile(50),
     p95: percentile(95),
     p99: percentile(99),
+    tokensIn: meters.tokensIn,
+    tokensOut: meters.tokensOut,
+    queueWaits: meters.queueWaits,
+    queueWaitAvgMs: meters.queueWaits ? Math.round(meters.queueWaitMs / meters.queueWaits) : 0,
+    aborts: meters.aborts,
     topModels: top(meters.byModel),
     topClients: top(meters.byClient),
     topProviders: top(meters.byProvider),
@@ -77,6 +109,11 @@ export function resetMeters() {
   meters.latency.fill(0);
   meters.requests = 0;
   meters.errors = 0;
+  meters.tokensIn = 0;
+  meters.tokensOut = 0;
+  meters.queueWaits = 0;
+  meters.queueWaitMs = 0;
+  meters.aborts = 0;
   for (const map of [meters.byStatus, meters.byModel, meters.byClient, meters.byProvider, meters.byError]) {
     map.clear();
   }
@@ -126,5 +163,32 @@ export function prometheus(pool) {
   out.push('# HELP hydra_uptime_seconds Process uptime');
   out.push('# TYPE hydra_uptime_seconds gauge');
   out.push(`hydra_uptime_seconds ${Math.round(process.uptime())}`);
+
+  out.push('# HELP hydra_tokens_total Tokens consumed upstream');
+  out.push('# TYPE hydra_tokens_total counter');
+  out.push(`hydra_tokens_total{direction="in"} ${meters.tokensIn}`);
+  out.push(`hydra_tokens_total{direction="out"} ${meters.tokensOut}`);
+
+  out.push('# HELP hydra_queue_waits_total Requests parked waiting for a free key');
+  out.push('# TYPE hydra_queue_waits_total counter');
+  out.push(`hydra_queue_waits_total ${meters.queueWaits}`);
+  out.push('# HELP hydra_client_aborts_total Streams abandoned by the client');
+  out.push('# TYPE hydra_client_aborts_total counter');
+  out.push(`hydra_client_aborts_total ${meters.aborts}`);
+
+  out.push('# HELP hydra_process_resident_memory_bytes Resident memory');
+  out.push('# TYPE hydra_process_resident_memory_bytes gauge');
+  out.push(`hydra_process_resident_memory_bytes ${process.memoryUsage().rss}`);
+  out.push('# HELP hydra_process_heap_bytes Heap in use');
+  out.push('# TYPE hydra_process_heap_bytes gauge');
+  out.push(`hydra_process_heap_bytes ${process.memoryUsage().heapUsed}`);
+  out.push('# HELP hydra_event_loop_lag_ms Event loop lag in milliseconds');
+  out.push('# TYPE hydra_event_loop_lag_ms gauge');
+  out.push(`hydra_event_loop_lag_ms ${loopLag.ms}`);
+  out.push('# HELP hydra_key_cooldown_ms Milliseconds until a key leaves cooldown');
+  out.push('# TYPE hydra_key_cooldown_ms gauge');
+  for (const key of pool.keys) {
+    out.push(`hydra_key_cooldown_ms{label="${esc(key.label)}"} ${key.coolingMs || 0}`);
+  }
   return out.join('\n') + '\n';
 }

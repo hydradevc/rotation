@@ -1,4 +1,5 @@
 import { once } from 'node:events';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { state, pushLog, tickRequests } from './store.js';
 import {
   rt,
@@ -10,7 +11,7 @@ import {
   penalize,
   msUntilSlot
 } from './pool.js';
-import { observe } from './metrics.js';
+import { observe, addTokens, noteQueueWait, noteAbort } from './metrics.js';
 import { emit } from './alerts.js';
 import {
   openaiToAnthropic,
@@ -111,19 +112,27 @@ function errPayload(format, status, message, type = 'invalid_request_error') {
   };
 }
 
-function presentedKey(req, url) {
+function presentedKey(req) {
   const auth = req.headers.authorization || '';
   const bearer = /^Bearer\s+(.+)$/i.exec(auth);
   if (bearer) return bearer[1].trim();
   if (req.headers['x-api-key']) return String(req.headers['x-api-key']).trim();
-  if (url.searchParams.get('key')) return url.searchParams.get('key');
   return '';
 }
 
-function authClient(req, url) {
-  const key = presentedKey(req, url);
+function sameSecret(a, b) {
+  const left = createHash('sha256').update(String(a)).digest();
+  const right = createHash('sha256').update(String(b)).digest();
+  return timingSafeEqual(left, right);
+}
+
+function authClient(req) {
+  const key = presentedKey(req);
   if (!key) return { error: 'missing api key' };
-  const client = state.clients.find((c) => c.key === key);
+  let client = null;
+  for (const candidate of state.clients) {
+    if (candidate.key && sameSecret(candidate.key, key)) client = candidate;
+  }
   if (!client) return { error: 'invalid api key' };
   if (client.status !== 'active') return { error: 'api key disabled' };
   return { client };
@@ -247,10 +256,23 @@ export function chargeClient(client, { tin = 0, tout = 0, ok }) {
   else client.totals.fail += 1;
   client.totals.tin += tin;
   client.totals.tout += tout;
+  client.lastUsed = Date.now();
+}
+
+function reserveBudget(client, estimate) {
+  if (!client.dailyTokens) return { ok: true, reserved: 0 };
   const day = todayKey();
   if (client.day.date !== day) client.day = { date: day, tokens: 0 };
-  client.day.tokens += tin + tout;
-  client.lastUsed = Date.now();
+  if (client.day.tokens + estimate > client.dailyTokens) return { ok: false, reserved: 0 };
+  client.day.tokens += estimate;
+  return { ok: true, reserved: estimate };
+}
+
+function settleBudget(client, reserved, actual) {
+  if (!reserved) return;
+  const day = todayKey();
+  if (client.day.date !== day) client.day = { date: day, tokens: 0 };
+  client.day.tokens = Math.max(0, client.day.tokens + (actual - reserved));
 }
 
 function chargeTotals({ tin = 0, tout = 0, ok }) {
@@ -271,7 +293,7 @@ function finishFailure(res, { clientFormat, status, message, retryAfterMs = 0 })
   sendJson(res, status, errPayload(clientFormat, status, message), headers);
 }
 
-async function pipeStream({ upstream, res, req, key, client, startedAt, estTokens, controller }) {
+async function pipeStream({ upstream, res, req, key, client, startedAt, estTokens, controller, reserved }) {
   res.writeHead(200, {
     'content-type': 'text/event-stream; charset=utf-8',
     'cache-control': 'no-cache, no-transform',
@@ -286,6 +308,7 @@ async function pipeStream({ upstream, res, req, key, client, startedAt, estToken
   const reader = upstream.body.getReader();
   let tail = '';
   let bytes = 0;
+  let clientGone = false;
   let idle = setTimeout(() => controller.abort(), state.settings.streamIdleMs);
   const resetIdle = () => {
     clearTimeout(idle);
@@ -293,6 +316,8 @@ async function pipeStream({ upstream, res, req, key, client, startedAt, estToken
   };
 
   const onClose = () => {
+    if (res.writableEnded) return;
+    clientGone = true;
     try {
       controller.abort();
     } catch {
@@ -312,9 +337,30 @@ async function pipeStream({ upstream, res, req, key, client, startedAt, estToken
     }
   } catch (err) {
     if (!res.writableEnded) res.end();
-    penalize(key, { kind: 'network', message: err.message });
     settle(key, {});
     recordLatency(key, Date.now() - startedAt);
+
+    if (clientGone) {
+      noteAbort();
+      settleBudget(client, reserved, 0);
+      tickRequests(1, 0);
+      chargeTotals({ ok: false });
+      chargeClient(client, { ok: false });
+      observe({ ms: Date.now() - startedAt, status: 499, client: client.name, provider: key.provider });
+      logRequest({
+        client: client.name,
+        model: '',
+        provider: key.provider,
+        key: key.label,
+        status: 499,
+        ms: Date.now() - startedAt,
+        err: 'client disconnected'
+      });
+      return;
+    }
+
+    penalize(key, { kind: 'network', message: err.message });
+    settleBudget(client, reserved, 0);
     chargeTotals({ ok: false });
     chargeClient(client, { ok: false });
     observe({ ms: Date.now() - startedAt, status: 0, client: client.name, provider: key.provider, error: err.message });
@@ -338,6 +384,7 @@ async function pipeStream({ upstream, res, req, key, client, startedAt, estToken
   const outTokens = real?.tout ?? Math.max(1, Math.round(bytes / 4));
   const inTokens = real?.tin ?? estTokens;
   settle(key, { tokenDelta: outTokens + inTokens - estTokens });
+  settleBudget(client, reserved, outTokens + inTokens);
   recordLatency(key, Date.now() - startedAt);
   markSuccess(key, 200);
   key.totals.tin += inTokens;
@@ -345,16 +392,17 @@ async function pipeStream({ upstream, res, req, key, client, startedAt, estToken
   tickRequests(1, outTokens + inTokens);
   chargeTotals({ tin: inTokens, tout: outTokens, ok: true });
   chargeClient(client, { tin: inTokens, tout: outTokens, ok: true });
+  addTokens(inTokens, outTokens);
   observe({ ms: Date.now() - startedAt, status: 200, client: client.name, provider: key.provider });
 }
 
-function modelsPayload(format) {
+function modelsPayload(client, format) {
   const ids = new Set([
     ...(state.settings.models || []),
     ...Object.keys(state.settings.aliases || {}),
     ...state.keys.map((k) => k.model).filter(Boolean)
   ]);
-  const list = [...ids];
+  const list = [...ids].filter((id) => clientAllowsModel(client, id));
   if (format === 'anthropic') {
     const data = list.map((id) => ({ id, type: 'model', display_name: id, created_at: new Date(0).toISOString() }));
     return { data, has_more: false, first_id: data[0]?.id || null, last_id: data[data.length - 1]?.id || null };
@@ -369,7 +417,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
   const clientFormat = isMessages ? 'anthropic' : 'openai';
   const kind = isCount ? 'count' : isMessages ? 'messages' : path === '/v1/embeddings' ? 'embeddings' : 'chat';
 
-  const auth = authClient(req, url);
+  const auth = authClient(req);
   if (auth.error) {
     sendJson(res, 401, errPayload(clientFormat, 401, auth.error, 'authentication_error'));
     return;
@@ -377,7 +425,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
   const { client } = auth;
 
   if (path === '/v1/models') {
-    sendJson(res, 200, modelsPayload(clientFormat));
+    sendJson(res, 200, modelsPayload(client, clientFormat));
     return;
   }
 
@@ -407,20 +455,25 @@ export async function handleProxy(req, res, url, bodyBuf) {
 
   const day = todayKey();
   if (client.day.date !== day) client.day = { date: day, tokens: 0 };
-  if (client.dailyTokens && client.day.tokens >= client.dailyTokens) {
+
+  const startedAt = Date.now();
+  const estTokens = estimateTokens(bodyBuf);
+
+  const budget = reserveBudget(client, estTokens);
+  if (!budget.ok) {
     sendJson(res, 429, errPayload(clientFormat, 429, 'daily token budget exhausted'), { 'retry-after': '60' });
     return;
   }
+  const reserved = budget.reserved;
   if (client.rpm) {
     const used = clientWindow(client);
     if (used > client.rpm) {
+      settleBudget(client, reserved, 0);
       sendJson(res, 429, errPayload(clientFormat, 429, 'client rpm limit reached'), { 'retry-after': '5' });
       return;
     }
   }
 
-  const startedAt = Date.now();
-  const estTokens = estimateTokens(bodyBuf);
   const provider = providerForModel(model);
   const settings = state.settings;
   const tried = new Set();
@@ -439,6 +492,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
       if (wait !== null && wait <= budget - waitedMs) {
         const pause = Math.max(wait, 25);
         waitedMs += pause;
+        noteQueueWait(pause);
         await sleep(pause);
         continue;
       }
@@ -509,6 +563,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
         }
         const status = upstream.status;
         const ms = Date.now() - startedAt;
+        settleBudget(client, reserved, 0);
         chargeTotals({ ok: false });
         chargeClient(client, { ok: false });
         observe({ ms, status, model, client: client.name, provider: key.provider, error: text.slice(0, 60) });
@@ -532,7 +587,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
     }
 
     if (upstreamStream) {
-      await pipeStream({ upstream, res, req, key, client, startedAt, estTokens, controller });
+      await pipeStream({ upstream, res, req, key, client, startedAt, estTokens, controller, reserved });
       key.totals.ok += 1;
       logRequest({
         client: client.name,
@@ -565,6 +620,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
     if (!usage.tin && !usage.tout) usage.tin = estTokens;
 
     settle(key, { tokenDelta: usage.tin + usage.tout - estTokens });
+    settleBudget(client, reserved, usage.tin + usage.tout);
     recordLatency(key, Date.now() - startedAt);
     markSuccess(key, 200);
     key.totals.ok += 1;
@@ -573,6 +629,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
     tickRequests(1, usage.tin + usage.tout);
     chargeTotals({ tin: usage.tin, tout: usage.tout, ok: true });
     chargeClient(client, { tin: usage.tin, tout: usage.tout, ok: true });
+    addTokens(usage.tin, usage.tout);
     observe({
       ms: Date.now() - startedAt,
       status: 200,
@@ -624,6 +681,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
       ? 'no upstream key available — add keys to the pool or wait for cooldowns'
       : lastFailure?.message || 'upstream failed';
   const retryAfter = lastFailure?.waited || Math.min(settings.queueWaitMs || 5000, 15000);
+  settleBudget(client, reserved, 0);
   chargeTotals({ ok: false });
   chargeClient(client, { ok: false });
   observe({ ms: Date.now() - startedAt, status, model, client: client.name, provider: provider || '-', error: message.slice(0, 60) });

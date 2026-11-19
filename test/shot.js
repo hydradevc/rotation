@@ -33,7 +33,9 @@ async function admin(token, p, method = 'GET', body) {
 
 async function prepare(token) {
   const state = await admin(token, '/admin/api/state');
-  const clientKey = state.clients[0].key;
+  const clientKey = (
+    await admin(token, `/admin/api/clients/${state.clients[0].id}/reveal`, 'POST', {})
+  ).key;
   for (const c of state.clients.slice(1)) await admin(token, `/admin/api/clients/${c.id}`, 'DELETE');
   await admin(token, '/admin/api/keys', 'DELETE');
 

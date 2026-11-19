@@ -6,20 +6,42 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=hydra
+Group=hydra
 WorkingDirectory=/opt/hydra
 ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
 Environment=NODE_ENV=production
 Environment=PORT=8080
 Environment=HYDRA_DATA=/var/lib/hydra
-# Set the admin password before the first start, or drop this line and read it from the console once.
+Environment=HYDRA_ACCESS_LOG=json
+# Set the admin password before the first start, then remove this line.
 # Environment=HYDRA_ADMIN_PASSWORD=change-me
+# Optional: keep the data encryption key outside the data directory.
+# Environment=HYDRA_MASTER_KEY=32-bytes-hex
+# Set when running behind a TLS-terminating reverse proxy.
+# Environment=HYDRA_TRUST_PROXY=1
+
 NoNewPrivileges=true
 PrivateTmp=true
-ProtectSystem=full
+PrivateDevices=true
+ProtectSystem=strict
 ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
 ReadWritePaths=/var/lib/hydra
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target

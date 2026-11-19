@@ -19,26 +19,62 @@ const SESSION_TTL = 12 * 60 * 60 * 1000;
 const sessions = new Map();
 const loginAttempts = new Map();
 
+function isSecureRequest(req) {
+  const env = process.env.HYDRA_SECURE_COOKIES;
+  if (env === '1' || env === 'true') return true;
+  if (env === '0' || env === 'false') return false;
+  if (req.socket.encrypted) return true;
+  const proto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase();
+  return proto === 'https';
+}
+
+function cookieName(req) {
+  return isSecureRequest(req) ? '__Host-hydra_sid' : 'hydra_sid';
+}
+
+function clientIp(req) {
+  if (process.env.HYDRA_TRUST_PROXY === '1' || process.env.HYDRA_TRUST_PROXY === 'true') {
+    const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+    if (forwarded) return forwarded;
+  }
+  return req.socket.remoteAddress || 'unknown';
+}
+
 function issueSession(req, res) {
   const token = crypto.randomBytes(32).toString('hex');
   sessions.set(token, {
     id: token.slice(0, 8),
     created: Date.now(),
     expires: Date.now() + SESSION_TTL,
-    ip: req.socket.remoteAddress || 'unknown',
+    ip: clientIp(req),
     ua: String(req.headers['user-agent'] || '').slice(0, 120)
   });
-  res.setHeader(
-    'set-cookie',
-    `hydra_sid=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_TTL / 1000}`
-  );
+  const flags = ['HttpOnly', 'SameSite=Strict', 'Path=/', `Max-Age=${SESSION_TTL / 1000}`];
+  if (isSecureRequest(req)) flags.push('Secure');
+  res.setHeader('set-cookie', `${cookieName(req)}=${token}; ${flags.join('; ')}`);
   return token;
 }
 
 function cookieToken(req) {
   const raw = req.headers.cookie || '';
-  const match = /(?:^|;\s*)hydra_sid=([a-f0-9]{64})/.exec(raw);
+  const match = /(?:^|;\s*)(?:__Host-)?hydra_sid=([a-f0-9]{64})/.exec(raw);
   return match ? match[1] : '';
+}
+
+function clearedCookie(req) {
+  const flags = ['HttpOnly', 'SameSite=Strict', 'Path=/', 'Max-Age=0'];
+  if (isSecureRequest(req)) flags.push('Secure');
+  return `${isSecureRequest(req) ? '__Host-hydra_sid' : 'hydra_sid'}=; ${flags.join('; ')}`;
+}
+
+function sameOrigin(req) {
+  const source = req.headers.origin || req.headers.referer;
+  if (!source) return true;
+  try {
+    return new URL(source).host === (req.headers.host || '');
+  } catch {
+    return false;
+  }
 }
 
 function authed(req) {
@@ -75,7 +111,8 @@ function readJson(body) {
 export function authState(req) {
   return {
     authed: authed(req),
-    defaultLang: state.settings.defaultLang || 'en'
+    defaultLang: state.settings.defaultLang || 'en',
+    tls: isSecureRequest(req)
   };
 }
 
@@ -208,7 +245,7 @@ async function probeKey(key) {
   }
 }
 
-function publicState() {
+function publicState(req) {
   const pool = poolSnapshot();
   const settings = { ...state.settings };
   delete settings.adminPasswordHash;
@@ -219,11 +256,11 @@ function publicState() {
     clients: state.clients.map((c) => ({
       id: c.id,
       name: c.name,
-      masked: c.key.slice(0, 12) + '…' + c.key.slice(-6),
-      key: c.key,
+      masked: c.key ? c.key.slice(0, 12) + '…' + c.key.slice(-6) : '——',
       rpm: c.rpm,
       rpmUsed: clientStats(c).rpmUsed,
       dailyTokens: c.dailyTokens,
+      dailyUsed: c.day?.tokens || 0,
       models: c.models,
       status: c.status,
       createdAt: c.createdAt,
@@ -237,7 +274,12 @@ function publicState() {
     metrics: metricsSnapshot(),
     logs,
     uptime: Math.round(process.uptime()),
-    statsStartedAt: state.totals.startedAt
+    statsStartedAt: state.totals.startedAt,
+    security: {
+      sealedState: Boolean(state.meta?.sealed),
+      unreadableSecrets: state.meta?.unreadableKeys || 0,
+      tls: isSecureRequest(req)
+    }
   };
 }
 
@@ -273,13 +315,18 @@ export async function handleAdmin(req, res, url, body) {
   const path = url.pathname;
   const method = req.method;
 
+  if (method !== 'GET' && !sameOrigin(req)) {
+    sendJson(res, 403, { error: 'cross-origin request blocked' });
+    return true;
+  }
+
   if (path === '/admin/api/session' && method === 'GET') {
     sendJson(res, 200, authState(req));
     return true;
   }
 
   if (path === '/admin/api/login' && method === 'POST') {
-    const ip = req.socket.remoteAddress || 'unknown';
+    const ip = clientIp(req);
     const now = Date.now();
     const bucket = loginAttempts.get(ip) || { count: 0, reset: now + 60000 };
     if (bucket.reset < now) {
@@ -307,7 +354,7 @@ export async function handleAdmin(req, res, url, body) {
   if (path === '/admin/api/logout' && method === 'POST') {
     const token = cookieToken(req);
     if (token) sessions.delete(token);
-    res.setHeader('set-cookie', 'hydra_sid=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
+    res.setHeader('set-cookie', clearedCookie(req));
     sendJson(res, 200, { ok: true });
     return true;
   }
@@ -318,7 +365,7 @@ export async function handleAdmin(req, res, url, body) {
   }
 
   if (path === '/admin/api/state' && method === 'GET') {
-    sendJson(res, 200, publicState());
+    sendJson(res, 200, publicState(req));
     return true;
   }
 
@@ -336,7 +383,7 @@ export async function handleAdmin(req, res, url, body) {
     const payload = readJson(body) || {};
     if (payload.all) {
       sessions.clear();
-      res.setHeader('set-cookie', 'hydra_sid=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
+      res.setHeader('set-cookie', clearedCookie(req));
       sendJson(res, 200, { ok: true, revoked: 'all' });
       return true;
     }
@@ -457,6 +504,18 @@ export async function handleAdmin(req, res, url, body) {
     state.clients.push(client);
     save();
     sendJson(res, 200, { ok: true, client });
+    return true;
+  }
+
+  const clientReveal = /^\/admin\/api\/clients\/([\w-]+)\/reveal$/.exec(path);
+  if (clientReveal && method === 'POST') {
+    const client = state.clients.find((c) => c.id === clientReveal[1]);
+    if (!client) {
+      sendJson(res, 404, { error: 'client not found' });
+      return true;
+    }
+    console.log(JSON.stringify({ evt: 'secret-reveal', at: new Date().toISOString(), client: client.name, ip: clientIp(req) }));
+    sendJson(res, 200, { key: client.key }, { 'cache-control': 'no-store' });
     return true;
   }
 

@@ -10,7 +10,9 @@ const S = {
   busy: false,
   filter: { log: 'all', keys: '', sort: 'default' },
   selected: new Set(),
-  settingsTab: 'engine'
+  settingsTab: 'engine',
+  session: null,
+  warnedSecrets: false
 };
 
 const TITLES = {
@@ -421,7 +423,7 @@ function renderAccess() {
             ${c.rpm ? `· ${num(c.rpmUsed)} / ${num(c.rpm)} rpm` : ''}</div>
         </div>
         <div class="client-actions">
-          <button class="btn btn-sm" data-client="copy" data-key="${esc(c.key)}">${esc(t('access.copy'))}</button>
+          <button class="btn btn-sm" data-client="copy" data-id="${esc(c.id)}">${esc(t('access.copy'))}</button>
           <button class="btn btn-sm" data-client="edit" data-id="${esc(c.id)}">${esc(t('action.edit'))}</button>
           <button class="btn btn-sm" data-client="rotate" data-id="${esc(c.id)}">${esc(t('access.rotate'))}</button>
           <button class="btn btn-sm btn-danger-ghost" data-client="delete" data-id="${esc(c.id)}">${esc(t('action.delete'))}</button>
@@ -499,6 +501,41 @@ function renderAnalytics() {
 function renderSettings() {
   fillSettings();
   renderSessions();
+  renderSecurity();
+}
+
+function renderSecurity() {
+  const sec = S.data?.security || {};
+  const tls = Boolean(sec.tls);
+  const rows = [
+    {
+      label: t('settings.sealed'),
+      value: sec.sealedState ? t('settings.sealedYes') : t('settings.sealedNo'),
+      ok: Boolean(sec.sealedState)
+    },
+    {
+      label: t('settings.unreadable'),
+      value: String(sec.unreadableSecrets || 0),
+      ok: !sec.unreadableSecrets
+    },
+    {
+      label: t('settings.transport'),
+      value: tls ? t('settings.transportTls') : t('settings.transportPlain'),
+      ok: tls,
+      hint: tls ? '' : t('settings.transportHint')
+    }
+  ];
+  $('#security-list').innerHTML = rows
+    .map(
+      (row) => `<div class="list-row">
+        <div>
+          <span class="list-name">${esc(row.label)}</span>
+          ${row.hint ? `<div class="small muted">${esc(row.hint)}</div>` : ''}
+        </div>
+        <span class="chip ${row.ok ? 'chip-ok' : 'chip-warn'}">${esc(row.value)}</span>
+      </div>`
+    )
+    .join('');
 }
 
 async function renderSessions() {
@@ -640,6 +677,10 @@ async function load() {
   if (S.paused) return;
   try {
     S.data = await api('/admin/api/state');
+    if (!S.warnedSecrets && S.data.security?.unreadableSecrets > 0) {
+      S.warnedSecrets = true;
+      toast(`${t('settings.unreadable')}: ${S.data.security.unreadableSecrets}`, 'err');
+    }
     renderShell();
     const view = $(`#view-${S.view}`);
     const focused = view && view.contains(document.activeElement);
@@ -958,7 +999,8 @@ $('#client-list').addEventListener('click', async (e) => {
   if (!btn) return;
   try {
     if (btn.dataset.client === 'copy') {
-      await copyText(btn.dataset.key);
+      const res = await api(`/admin/api/clients/${btn.dataset.id}/reveal`, 'POST', {});
+      await copyText(res.key);
     } else if (btn.dataset.client === 'edit') {
       const client = S.data.clients.find((c) => c.id === btn.dataset.id);
       openClientModal(client);
@@ -1245,6 +1287,7 @@ window.addEventListener('resize', () => {
   } catch {
     /* offline */
   }
+  S.session = session;
   S.lang = localStorage.getItem('hydra_lang') || session.defaultLang || 'en';
   applyLang();
   if (session.authed) {

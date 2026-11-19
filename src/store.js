@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { initMasterKey, seal, openSafe } from './crypto.js';
 
 const DATA_DIR = process.env.HYDRA_DATA || path.resolve(process.cwd(), 'data');
 const STATE_FILE = path.join(DATA_DIR, 'state.json');
@@ -38,10 +39,11 @@ const DEFAULT_SETTINGS = {
 };
 
 export const state = {
-  version: 1,
+  version: 2,
   settings: { ...DEFAULT_SETTINGS },
   keys: [],
   clients: [],
+  meta: { sealed: false, unreadableKeys: 0 },
   totals: { req: 0, ok: 0, fail: 0, tin: 0, tout: 0, startedAt: Date.now() }
 };
 
@@ -134,12 +136,45 @@ export function save() {
   saveTimer.unref?.();
 }
 
+function serialise() {
+  return JSON.stringify(
+    {
+      ...state,
+      version: 2,
+      meta: { ...state.meta, sealed: true },
+      keys: state.keys.map((key) => ({ ...key, key: seal(key.key) })),
+      clients: state.clients.map((client) => ({ ...client, key: seal(client.key) }))
+    },
+    null,
+    2
+  );
+}
+
 export function flush() {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     const tmp = STATE_FILE + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(state, null, 2));
+    const fd = fs.openSync(tmp, 'w', 0o600);
+    try {
+      fs.writeFileSync(fd, serialise());
+      fs.fsyncSync(fd);
+    } finally {
+      fs.closeSync(fd);
+    }
+    if (fs.existsSync(STATE_FILE)) {
+      try {
+        fs.renameSync(STATE_FILE, STATE_FILE + '.bak');
+      } catch {
+        /* first write or locked file */
+      }
+    }
     fs.renameSync(tmp, STATE_FILE);
+    try {
+      fs.chmodSync(STATE_FILE, 0o600);
+    } catch {
+      /* best effort */
+    }
+    state.meta.sealed = true;
   } catch (err) {
     console.error('[store] write failed:', err.message);
   }
@@ -148,6 +183,7 @@ export function flush() {
 export function load() {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
+    initMasterKey(DATA_DIR);
     if (!fs.existsSync(STATE_FILE)) return false;
     const raw = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
     state.settings = { ...DEFAULT_SETTINGS, ...(raw.settings || {}) };
@@ -155,15 +191,37 @@ export function load() {
     state.keys = Array.isArray(raw.keys) ? raw.keys : [];
     state.clients = Array.isArray(raw.clients) ? raw.clients : [];
     state.totals = { ...state.totals, ...(raw.totals || {}) };
-    for (const k of state.keys) {
-      k.totals = k.totals || { req: 0, ok: 0, fail: 0, tin: 0, tout: 0 };
-      k.status = k.status || 'active';
+    state.meta = { sealed: true, unreadableKeys: 0 };
+
+    for (const key of state.keys) {
+      key.totals = key.totals || { req: 0, ok: 0, fail: 0, tin: 0, tout: 0 };
+      key.status = key.status || 'active';
+      const plain = openSafe(key.key);
+      if (plain === null) {
+        state.meta.unreadableKeys += 1;
+        key.status = 'disabled';
+        key.lastError = 'cannot decrypt: master key mismatch';
+        key.key = '';
+      } else {
+        key.key = plain;
+      }
     }
-    for (const c of state.clients) {
-      c.totals = c.totals || { req: 0, ok: 0, fail: 0, tin: 0, tout: 0 };
-      c.day = c.day || { date: '', tokens: 0 };
-      c.status = c.status || 'active';
+
+    for (const client of state.clients) {
+      client.totals = client.totals || { req: 0, ok: 0, fail: 0, tin: 0, tout: 0 };
+      client.day = client.day || { date: '', tokens: 0 };
+      client.status = client.status || 'active';
+      const plain = openSafe(client.key);
+      if (plain === null) {
+        state.meta.unreadableKeys += 1;
+        client.status = 'disabled';
+        client.key = '';
+      } else {
+        client.key = plain;
+      }
     }
+
+    save();
     return true;
   } catch (err) {
     console.error('[store] load failed:', err.message);

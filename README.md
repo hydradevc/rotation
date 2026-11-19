@@ -6,7 +6,7 @@
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-4C8DFF?style=flat-square"></a>
   <img alt="node" src="https://img.shields.io/badge/node-%E2%89%A520-3C873A?style=flat-square">
   <img alt="dependencies" src="https://img.shields.io/badge/dependencies-0-38D39F?style=flat-square">
-  <img alt="tests" src="https://img.shields.io/badge/tests-65%20passing-38D39F?style=flat-square">
+  <img alt="tests" src="https://img.shields.io/badge/tests-96%20passing-38D39F?style=flat-square">
   <img alt="i18n" src="https://img.shields.io/badge/panel-EN%20%7C%20RU-8B93A7?style=flat-square">
   <a href="https://github.com/hydradevc/rotation/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/hydradevc/rotation/actions/workflows/ci.yml/badge.svg"></a>
 </p>
@@ -59,6 +59,8 @@ The ceiling becomes the sum of the pool: **100 keys × 60 RPM = 6,000 RPM** on a
 | **Prometheus + OpenAPI** | `GET /metrics` and `GET /openapi.json` out of the box, no plugins. |
 | **Alerts** | POST a JSON webhook when a key is disabled or the pool runs dry. Works with Discord, Slack, n8n. |
 | **Backups** | Export keys, access keys and settings as one JSON file; restore it on another box. |
+| **Secrets encrypted at rest** | Upstream and access keys are sealed with AES-256-GCM; `state.json` never holds plaintext. |
+| **Hardened admin** | HttpOnly + SameSite=Strict cookies, `Secure` and `__Host-` behind TLS, scrypt password, cross-origin writes rejected. |
 | **Zero dependencies** | Pure Node ≥ 20. No build step, no `node_modules`, no container required. |
 | **Panel in two languages** | Full English and Russian UI, dark, keyboard-friendly, live metrics once per second. |
 
@@ -77,7 +79,7 @@ First start prints the admin password once and creates your first access key:
 │  HYDRA admin password (save it now)         │
 │  xxxxxxxxxxxx                               │
 └─────────────────────────────────────────────┘
-HYDRA 1.1.0 listening on http://0.0.0.0:8080
+HYDRA 1.2.0 listening on http://0.0.0.0:8080
   admin panel    http://localhost:8080/admin
   openai base    http://localhost:8080/v1
   anthropic base http://localhost:8080
@@ -237,7 +239,8 @@ provider, base URL or the secret itself. Bulk actions (enable, disable, delete) 
 | `POST` | `/v1/messages` | Anthropic messages, streaming included |
 | `POST` | `/v1/messages/count_tokens` | Anthropic token counting |
 | `GET` | `/v1/models` | Models advertised in settings (OpenAI and Anthropic shapes) |
-| `GET` | `/healthz` | Liveness with key count and uptime |
+| `GET` | `/healthz` | Liveness |
+| `GET` | `/readyz` | Readiness: pool healthy, state writable |
 | `GET` | `/metrics` | Prometheus exposition |
 | `GET` | `/openapi.json` | OpenAPI 3.1 spec |
 | `GET` | `/admin` | Admin panel |
@@ -263,17 +266,49 @@ All of it lives in **Settings** in the panel.
 | Upstream timeout | 180,000 ms | Time allowed for upstream headers |
 | Stream idle timeout | 240,000 ms | Abort a stream that stops producing |
 
+## Security
+
+| Control | Behaviour |
+|---|---|
+| Secrets at rest | Upstream keys and access keys are sealed with AES-256-GCM. The master key lives in `data/master.key` (mode `0600`) or in `HYDRA_MASTER_KEY`. A different master key disables the affected keys instead of leaking garbage upstream. |
+| State file | Written atomically with `fsync`, mode `0600`, previous revision kept as `state.json.bak`. |
+| Admin password | scrypt hash, never stored or logged in clear. |
+| Sessions | 12 h, random 32-byte token, `HttpOnly`, `SameSite=Strict`, `Secure` + `__Host-` prefix when the request arrives over TLS. |
+| CSRF | Any state-changing admin call with a foreign `Origin`/`Referer` is rejected. |
+| Access key in panel | The list shows a mask; the secret is returned only by an explicit reveal call (audit-logged). |
+| Headers | CSP on the panel, `X-Frame-Options: DENY`, `nosniff`, `no-referrer`, COOP/CORP, HSTS when TLS is detected. |
+| Query-string auth | `?key=` is not accepted; only `Authorization: Bearer` and `x-api-key`. |
+| Brute force | Login attempts are limited per IP. |
+
+## Configuration
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `PORT` / `HOST` | `8080` / `0.0.0.0` | Listen address |
+| `HYDRA_DATA` | `./data` | State directory |
+| `HYDRA_ADMIN_PASSWORD` | generated | Password for the first start |
+| `HYDRA_MASTER_KEY` | generated file | 32-byte hex/base64 key for secrets at rest |
+| `HYDRA_SECURE_COOKIES` | `auto` | `1`/`0` to force the `Secure` cookie flag |
+| `HYDRA_TRUST_PROXY` | off | Trust `X-Forwarded-For` / `X-Forwarded-Proto` |
+| `HYDRA_ACCESS_LOG` | off | `json` for structured access logs |
+
 ## Tests
 
 ```bash
-npm test          # 35 backend checks against a local mock upstream
-npm run test:ui   # 30 panel checks in headless Chromium
-npm run bench     # 100 keys, 2,000 requests
+npm test            # 36 backend + 30 security checks
+npm run test:ui     # 30 panel checks in headless Chromium
+npm run test:security  # encryption, cookies, CSRF, budgets, aborts
+npm run bench       # 100 keys, 2,000 requests
 ```
 
 Backend coverage: bulk import, concurrent fan-out across keys, `429` absorption against a
 6×5 RPM ceiling, saturation behaviour, SSE streaming, native Anthropic calls, cross-format routing
 both ways, failover from a dead key, token accounting, request log.
+
+Security coverage: no plaintext secrets on disk, `0600` permissions, master-key mismatch handling,
+cookie flags over HTTP and behind a TLS proxy, query-string auth rejection, cross-origin admin
+writes, model allow-list filtering, daily budget under parallel load, client-disconnect behaviour,
+readiness gating.
 
 UI coverage: every view renders without console errors, key editing, bulk actions, probe-all,
 playground round trip, settings persistence, CORS headers, backup/restore, CSV export,
@@ -291,6 +326,7 @@ src/metrics.js       counters, percentiles, Prometheus rendering
 src/alerts.js        webhook notifications
 src/admin.js         sessions, admin API
 src/openapi.js       API description
+src/crypto.js        master key, AES-256-GCM sealing
 public/              panel (vanilla JS, no framework, no build)
 deploy/hydra.service systemd unit
 test/                mock upstream, integration, UI and bench harnesses
@@ -340,6 +376,6 @@ node server.js        # зависимостей нет, npm install не нуж
 с лимитами, песочница, аналитика с перцентилями, `GET /metrics` для Prometheus,
 `GET /openapi.json`, вебхуки в Discord/Slack, бэкап и восстановление, панель на русском.
 
-Тесты: `npm test` (35 проверок), `npm run test:ui` (30 проверок), `npm run bench`.
+Тесты: `npm test` (36 бэкенд + 30 безопасность), `npm run test:ui` (30 проверок), `npm run bench`.
 
 </details>

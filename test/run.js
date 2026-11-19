@@ -85,8 +85,11 @@ async function main() {
     };
 
     let s = await admin('/admin/api/state');
-    check('default access key exists', s.clients.length === 1 && s.clients[0].key.startsWith('hydra_sk_'));
-    const CLIENT_KEY = s.clients[0].key;
+    const CLIENT_KEY = (
+      await admin(`/admin/api/clients/${s.clients[0].id}/reveal`, 'POST', {})
+    ).key;
+    check('default access key exists', s.clients.length === 1 && CLIENT_KEY.startsWith('hydra_sk_'));
+    check('state payload hides the access key', !s.clients[0].key);
 
     const chat = async (payload, opts = {}) => {
       const res = await fetch(`${BASE}${opts.path || '/v1/chat/completions'}`, {

@@ -1,6 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { load, flush, state } from './src/store.js';
 import { handleAdmin, ensurePassword, ensureDefaultClient } from './src/admin.js';
@@ -13,7 +14,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || '0.0.0.0';
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
+const MAX_URL = 4096;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -26,6 +28,50 @@ const MIME = {
   '.png': 'image/png',
   '.webmanifest': 'application/manifest+json'
 };
+
+const CSP = [
+  "default-src 'self'",
+  "img-src 'self' data:",
+  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self'",
+  "connect-src 'self'",
+  "font-src 'self'",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'none'"
+].join('; ');
+
+function requestIsSecure(req) {
+  if (req.socket.encrypted) return true;
+  const proto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase();
+  return proto === 'https';
+}
+
+function isApiPath(pathname) {
+  return (
+    pathname.startsWith('/v1/') ||
+    pathname.startsWith('/admin/api/') ||
+    pathname === '/healthz' ||
+    pathname === '/readyz' ||
+    pathname === '/metrics' ||
+    pathname === '/openapi.json'
+  );
+}
+
+function applySecurityHeaders(req, res, pathname) {
+  res.setHeader('x-content-type-options', 'nosniff');
+  res.setHeader('x-frame-options', 'DENY');
+  res.setHeader('referrer-policy', 'no-referrer');
+  res.setHeader('permissions-policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=()');
+  res.setHeader('cross-origin-opener-policy', 'same-origin');
+  res.setHeader('cross-origin-resource-policy', 'same-origin');
+  res.setHeader('x-hydra-version', VERSION);
+  if (!isApiPath(pathname)) res.setHeader('content-security-policy', CSP);
+  if (requestIsSecure(req)) {
+    res.setHeader('strict-transport-security', 'max-age=31536000; includeSubDomains');
+  }
+}
 
 function serveFile(req, res, filePath) {
   fs.stat(filePath, (err, stat) => {
@@ -70,13 +116,46 @@ function applyCors(req, res) {
   if (origin !== '*') res.setHeader('vary', 'origin');
 }
 
+function writeJson(res, status, payload) {
+  const body = Buffer.from(JSON.stringify(payload));
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'content-length': body.length });
+  res.end(body);
+}
+
+let ready = false;
+let draining = false;
+
 const server = http.createServer(async (req, res) => {
+  const startedAt = Date.now();
+  const requestId = crypto.randomBytes(8).toString('hex');
+  res.setHeader('x-request-id', requestId);
+
+  if (!req.url || req.url.length > MAX_URL) {
+    res.writeHead(414, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('uri too long');
+    return;
+  }
+
   const url = new URL(req.url, 'http://' + (req.headers.host || 'localhost'));
   const pathname = url.pathname;
 
-  res.setHeader('x-content-type-options', 'nosniff');
-  res.setHeader('referrer-policy', 'same-origin');
-  res.setHeader('x-hydra-version', VERSION);
+  applySecurityHeaders(req, res, pathname);
+
+  if (process.env.HYDRA_ACCESS_LOG === 'json') {
+    res.on('finish', () => {
+      console.log(
+        JSON.stringify({
+          evt: 'http',
+          id: requestId,
+          method: req.method,
+          path: pathname,
+          status: res.statusCode,
+          ms: Date.now() - startedAt,
+          ip: req.socket.remoteAddress
+        })
+      );
+    });
+  }
 
   try {
     if (pathname.startsWith('/v1/')) {
@@ -89,17 +168,34 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/healthz') {
+      writeJson(res, 200, {
+        ok: true,
+        version: VERSION,
+        uptime: Math.round(process.uptime())
+      });
+      return;
+    }
+
+    if (pathname === '/readyz') {
       const pool = poolSnapshot();
-      res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(
-        JSON.stringify({
-          ok: true,
-          version: VERSION,
-          keys: state.keys.length,
-          healthy: pool.summary.healthy,
-          uptime: Math.round(process.uptime())
-        })
-      );
+      const writable = (() => {
+        try {
+          const dir = process.env.HYDRA_DATA || path.resolve(process.cwd(), 'data');
+          fs.accessSync(dir, fs.constants.W_OK);
+          return true;
+        } catch {
+          return false;
+        }
+      })();
+      const ok = ready && !draining && writable && pool.summary.healthy > 0;
+      writeJson(res, ok ? 200 : 503, {
+        ok,
+        ready: ready && !draining,
+        writable,
+        keys: pool.summary.keys,
+        healthy: pool.summary.healthy,
+        unreadableSecrets: state.meta?.unreadableKeys || 0
+      });
       return;
     }
 
@@ -111,9 +207,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/openapi.json') {
-      const body = Buffer.from(JSON.stringify(openapiSpec(), null, 2));
-      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'content-length': body.length });
-      res.end(body);
+      writeJson(res, 200, openapiSpec());
       return;
     }
 
@@ -171,6 +265,7 @@ const generated = ensurePassword((password) => {
   console.log('');
 });
 const defaultClient = ensureDefaultClient();
+ready = true;
 
 server.listen(PORT, HOST, () => {
   console.log(`HYDRA ${VERSION} listening on http://${HOST}:${PORT}`);
@@ -179,6 +274,9 @@ server.listen(PORT, HOST, () => {
   console.log(`  anthropic base http://localhost:${PORT}`);
   console.log(`  metrics        http://localhost:${PORT}/metrics`);
   console.log(`  upstream keys  ${state.keys.length}`);
+  if (state.meta.unreadableKeys) {
+    console.log(`  WARNING: ${state.meta.unreadableKeys} secrets cannot be decrypted with the current master key`);
+  }
   if (defaultClient) {
     console.log('');
     console.log('  Default access key created:');
@@ -191,11 +289,29 @@ server.listen(PORT, HOST, () => {
   }
 });
 
-function shutdown() {
+let shuttingDown = false;
+
+function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  draining = false;
+  ready = false;
+  console.log(JSON.stringify({ evt: 'shutdown', signal, at: new Date().toISOString() }));
   flush();
   server.close(() => process.exit(0));
-  setTimeout(() => process.exit(0), 1500).unref();
+  server.closeIdleConnections?.();
+  setTimeout(() => {
+    server.closeAllConnections?.();
+    process.exit(0);
+  }, 10000).unref();
 }
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('unhandledRejection', (err) => {
+  console.error(JSON.stringify({ evt: 'unhandledRejection', error: String(err?.message || err), at: new Date().toISOString() }));
+});
+process.on('uncaughtException', (err) => {
+  console.error(JSON.stringify({ evt: 'uncaughtException', error: String(err?.stack || err), at: new Date().toISOString() }));
+  shutdown('uncaughtException');
+});

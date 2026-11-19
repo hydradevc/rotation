@@ -33,7 +33,7 @@ async function main() {
   };
 
   const state = await api('/admin/api/state');
-  const clientKey = state.clients[0].key;
+  const clientKey = (await api(`/admin/api/clients/${state.clients[0].id}/reveal`, 'POST', {})).key;
   await api('/admin/api/keys/bulk', 'POST', {
     text: [
       `alpha | sk-ui-alpha-1111 | http://127.0.0.1:${MOCK_PORT}/v1 | openai`,
