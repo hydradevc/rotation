@@ -1,0 +1,18 @@
+{
+  "name": "hydra-rotator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "HYDRA — high-throughput API key rotator for OpenAI-compatible and Anthropic providers",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test/run.js",
+    "test:ui": "node test/ui.js",
+    "bench": "node test/bench.js",
+    "shots": "node test/shot.js"
+  }
+}

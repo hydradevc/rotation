@@ -1,0 +1,606 @@
+import { once } from 'node:events';
+import { state, pushLog, tickRequests } from './store.js';
+import {
+  rt,
+  pickKey,
+  reserve,
+  settle,
+  recordLatency,
+  markSuccess,
+  penalize
+} from './pool.js';
+import {
+  openaiToAnthropic,
+  anthropicToOpenAI,
+  openaiResponseToAnthropic,
+  anthropicResponseToOpenAI,
+  syntheticAnthropicStream,
+  syntheticOpenAIStream
+} from './translate.js';
+
+const MAX_BODY = 32 * 1024 * 1024;
+const CLIENT_WINDOW = 60;
+const CLIENT_BUCKETS = 60;
+
+const clientRuntime = new Map();
+
+function clientWindow(client) {
+  let r = clientRuntime.get(client.id);
+  if (!r) {
+    r = { epoch: new Float64Array(CLIENT_BUCKETS).fill(-1), req: new Float64Array(CLIENT_BUCKETS) };
+    clientRuntime.set(client.id, r);
+  }
+  const sec = Math.floor(Date.now() / 1000);
+  const i = ((sec % CLIENT_BUCKETS) + CLIENT_BUCKETS) % CLIENT_BUCKETS;
+  if (r.epoch[i] !== sec) {
+    r.epoch[i] = sec;
+    r.req[i] = 0;
+  }
+  r.req[i] += 1;
+  let total = 0;
+  for (let n = 0; n < CLIENT_BUCKETS; n++) {
+    if (r.epoch[n] <= sec && r.epoch[n] > sec - CLIENT_WINDOW) total += r.req[n];
+  }
+  return total;
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function readBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > MAX_BODY) {
+        reject(Object.assign(new Error('body too large'), { status: 413 }));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
+function sendJson(res, status, payload) {
+  const body = Buffer.from(JSON.stringify(payload));
+  if (res.headersSent) return;
+  res.writeHead(status, {
+    'content-type': 'application/json; charset=utf-8',
+    'content-length': body.length,
+    'cache-control': 'no-store'
+  });
+  res.end(body);
+}
+
+function errPayload(format, status, message, type = 'invalid_request_error') {
+  if (format === 'anthropic') {
+    return {
+      type: 'error',
+      error: { type: status === 429 ? 'rate_limit_error' : type, message }
+    };
+  }
+  return {
+    error: {
+      message,
+      type: status === 429 ? 'rate_limit_error' : type,
+      code: status
+    }
+  };
+}
+
+function presentedKey(req, url) {
+  const auth = req.headers.authorization || '';
+  const bearer = /^Bearer\s+(.+)$/i.exec(auth);
+  if (bearer) return bearer[1].trim();
+  if (req.headers['x-api-key']) return String(req.headers['x-api-key']).trim();
+  if (url.searchParams.get('key')) return url.searchParams.get('key');
+  return '';
+}
+
+function authClient(req, url) {
+  const key = presentedKey(req, url);
+  if (!key) return { error: 'missing api key' };
+  const client = state.clients.find((c) => c.key === key);
+  if (!client) return { error: 'invalid api key' };
+  if (client.status !== 'active') return { error: 'api key disabled' };
+  return { client };
+}
+
+function providerForModel(model) {
+  const routes = state.settings.modelRoutes || {};
+  for (const [prefix, provider] of Object.entries(routes)) {
+    if (prefix && model.startsWith(prefix)) return provider === 'anthropic' ? 'anthropic' : 'openai';
+  }
+  return null;
+}
+
+function joinUrl(base, path) {
+  const trimmed = String(base || '').replace(/\/+$/, '');
+  if (/\/v1$/.test(trimmed)) return trimmed + path.replace(/^\/v1/, '');
+  return trimmed + path;
+}
+
+function targetPath(kind, provider) {
+  if (kind === 'count') return '/v1/messages/count_tokens';
+  if (provider === 'anthropic') return '/v1/messages';
+  if (kind === 'embeddings') return '/v1/embeddings';
+  return '/v1/chat/completions';
+}
+
+function parseRetryAfter(headers) {
+  const retryAfter = headers.get('retry-after');
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+    const date = Date.parse(retryAfter);
+    if (Number.isFinite(date)) return Math.max(0, date - Date.now());
+  }
+  const reset = headers.get('x-ratelimit-reset-requests') || headers.get('x-ratelimit-reset-tokens');
+  if (reset) {
+    const match = /^(?:(\d+(?:\.\d+)?)h)?(?:(\d+(?:\.\d+)?)m)?(?:(\d+(?:\.\d+)?)s)?(?:(\d+(?:\.\d+)?)ms)?$/.exec(reset.trim());
+    if (match) {
+      const [, h, m, s, ms] = match;
+      return (
+        (Number(h || 0) * 3600 + Number(m || 0) * 60 + Number(s || 0)) * 1000 + Number(ms || 0)
+      );
+    }
+  }
+  return 0;
+}
+
+function estimateTokens(buffer) {
+  if (!buffer) return 0;
+  return Math.max(1, Math.round(buffer.length / 4));
+}
+
+function usageFromJson(json, format) {
+  if (!json) return { tin: 0, tout: 0 };
+  if (format === 'anthropic') {
+    return { tin: json.usage?.input_tokens || 0, tout: json.usage?.output_tokens || 0 };
+  }
+  return {
+    tin: json.usage?.prompt_tokens || 0,
+    tout: json.usage?.completion_tokens || 0
+  };
+}
+
+function usageFromTail(tail) {
+  const matches = [...String(tail).matchAll(/"usage"\s*:\s*\{[^}]*\}/g)];
+  if (!matches.length) return null;
+  let tin = 0;
+  let tout = 0;
+  for (const m of matches) {
+    try {
+      const parsed = JSON.parse('{' + m[0] + '}').usage;
+      tin = Math.max(tin, parsed.input_tokens || parsed.prompt_tokens || 0);
+      tout = Math.max(tout, parsed.output_tokens || parsed.completion_tokens || 0);
+    } catch {
+      /* ignore malformed fragment */
+    }
+  }
+  if (!tin && !tout) return null;
+  return { tin, tout };
+}
+
+function classifyStatus(status) {
+  if (status === 401 || status === 403) return 'auth';
+  if (status === 429) return 'rate';
+  if (status >= 500) return 'upstream';
+  return 'client';
+}
+
+function buildUpstreamHeaders(key, req) {
+  const headers = {
+    'content-type': 'application/json',
+    accept: 'application/json'
+  };
+  if (key.provider === 'anthropic') {
+    headers['x-api-key'] = key.key;
+    headers['anthropic-version'] = req.headers['anthropic-version'] || '2023-06-01';
+    if (req.headers['anthropic-beta']) headers['anthropic-beta'] = req.headers['anthropic-beta'];
+  } else {
+    headers.authorization = 'Bearer ' + key.key;
+    if (req.headers['openai-organization']) headers['openai-organization'] = req.headers['openai-organization'];
+    if (req.headers['openai-project']) headers['openai-project'] = req.headers['openai-project'];
+  }
+  return headers;
+}
+
+function buildPayload(kind, clientFormat, keyFormat, body) {
+  if (kind === 'embeddings' || kind === 'count') return body;
+  if (clientFormat === keyFormat) return body;
+  if (clientFormat === 'openai' && keyFormat === 'anthropic') return openaiToAnthropic(body);
+  if (clientFormat === 'anthropic' && keyFormat === 'openai') return anthropicToOpenAI(body);
+  return body;
+}
+
+function clientAllowsModel(client, model) {
+  if (!client.models || !client.models.length) return true;
+  return client.models.some((pattern) => (pattern.endsWith('*') ? model.startsWith(pattern.slice(0, -1)) : pattern === model));
+}
+
+function chargeClient(client, { tin = 0, tout = 0, ok }) {
+  client.totals.req += 1;
+  if (ok) client.totals.ok += 1;
+  else client.totals.fail += 1;
+  client.totals.tin += tin;
+  client.totals.tout += tout;
+  const day = todayKey();
+  if (client.day.date !== day) client.day = { date: day, tokens: 0 };
+  client.day.tokens += tin + tout;
+  client.lastUsed = Date.now();
+}
+
+function chargeTotals({ tin = 0, tout = 0, ok }) {
+  state.totals.req += 1;
+  if (ok) state.totals.ok += 1;
+  else state.totals.fail += 1;
+  state.totals.tin += tin;
+  state.totals.tout += tout;
+}
+
+function logRequest(entry) {
+  pushLog({
+    ts: Date.now(),
+    ...entry
+  });
+}
+
+async function pipeStream({ upstream, res, req, key, client, format: clientFormat, startedAt, estTokens, controller }) {
+  res.writeHead(200, {
+    'content-type': 'text/event-stream; charset=utf-8',
+    'cache-control': 'no-cache, no-transform',
+    connection: 'keep-alive',
+    'x-accel-buffering': 'no',
+    'x-hydra-key': key.label,
+    'x-hydra-provider': key.provider
+  });
+  res.flushHeaders?.();
+  res.socket?.setNoDelay?.(true);
+
+  const reader = upstream.body.getReader();
+  let tail = '';
+  let bytes = 0;
+  let idle = setTimeout(() => controller.abort(), state.settings.streamIdleMs);
+  const resetIdle = () => {
+    clearTimeout(idle);
+    idle = setTimeout(() => controller.abort(), state.settings.streamIdleMs);
+  };
+
+  const onClose = () => {
+    try {
+      controller.abort();
+    } catch {
+      /* already gone */
+    }
+  };
+  res.on('close', onClose);
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      resetIdle();
+      bytes += value.byteLength;
+      tail = (tail + Buffer.from(value).toString('utf8')).slice(-4096);
+      if (!res.write(Buffer.from(value))) await once(res, 'drain');
+    }
+  } catch (err) {
+    if (!res.writableEnded) res.end();
+    penalize(key, { kind: 'network', message: err.message });
+    settle(key, {});
+    recordLatency(key, Date.now() - startedAt);
+    chargeTotals({ ok: false });
+    chargeClient(client, { ok: false });
+    logRequest({
+      client: client.name,
+      model: '',
+      provider: key.provider,
+      key: key.label,
+      status: 0,
+      ms: Date.now() - startedAt,
+      err: err.message
+    });
+    return;
+  } finally {
+    clearTimeout(idle);
+    res.off('close', onClose);
+  }
+
+  if (!res.writableEnded) res.end();
+  const real = usageFromTail(tail);
+  const outTokens = real?.tout ?? Math.max(1, Math.round(bytes / 4));
+  const inTokens = real?.tin ?? estTokens;
+  settle(key, { tokenDelta: outTokens + inTokens - estTokens });
+  recordLatency(key, Date.now() - startedAt);
+  markSuccess(key, 200);
+  key.totals.tin += inTokens;
+  key.totals.tout += outTokens;
+  tickRequests(1, outTokens + inTokens);
+  chargeTotals({ tin: inTokens, tout: outTokens, ok: true });
+  chargeClient(client, { tin: inTokens, tout: outTokens, ok: true });
+}
+
+export async function handleProxy(req, res, url, bodyBuf) {
+  const path = url.pathname;
+  const isCount = path === '/v1/messages/count_tokens';
+  const isMessages = path === '/v1/messages' || isCount;
+  const clientFormat = isMessages ? 'anthropic' : 'openai';
+  const kind = isCount ? 'count' : isMessages ? 'messages' : path === '/v1/embeddings' ? 'embeddings' : 'chat';
+
+  const auth = authClient(req, url);
+  if (auth.error) {
+    sendJson(res, 401, errPayload(clientFormat, 401, auth.error, 'authentication_error'));
+    return;
+  }
+  const { client } = auth;
+
+  if (path === '/v1/models') {
+    const models = new Set(
+      [...(state.settings.models || []), ...Object.keys(state.settings.aliases || {}), ...state.keys.map((k) => k.model).filter(Boolean)]
+    );
+    const list = [...models].map((id) => ({ id, object: 'model', owned_by: 'hydra' }));
+    sendJson(res, 200, { object: 'list', data: list });
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    sendJson(res, 405, errPayload(clientFormat, 405, 'method not allowed', 'invalid_request_error'));
+    return;
+  }
+
+  let body;
+  try {
+    body = JSON.parse(bodyBuf.toString('utf8') || '{}');
+  } catch {
+    sendJson(res, 400, errPayload(clientFormat, 400, 'invalid json body'));
+    return;
+  }
+
+  const requestedModel = String(body.model || '');
+  const model = state.settings.aliases?.[requestedModel] || requestedModel;
+  if (!model) {
+    sendJson(res, 400, errPayload(clientFormat, 400, 'model is required'));
+    return;
+  }
+  if (kind !== 'messages' && !clientAllowsModel(client, model)) {
+    sendJson(res, 403, errPayload(clientFormat, 403, `model ${model} is not allowed for this key`, 'permission_error'));
+    return;
+  }
+
+  const day = todayKey();
+  if (client.day.date !== day) client.day = { date: day, tokens: 0 };
+  if (client.dailyTokens && client.day.tokens >= client.dailyTokens) {
+    sendJson(res, 429, errPayload(clientFormat, 429, 'daily token budget exhausted'));
+    return;
+  }
+  if (client.rpm) {
+    const used = clientWindow(client);
+    if (used > client.rpm) {
+      sendJson(res, 429, errPayload(clientFormat, 429, 'client rpm limit reached'));
+      return;
+    }
+  }
+
+  const startedAt = Date.now();
+  const estTokens = estimateTokens(bodyBuf);
+  const provider = providerForModel(model);
+  const tried = new Set();
+  const settings = state.settings;
+  let attempts = 0;
+  let lastFailure = null;
+
+  while (attempts < settings.maxAttempts && Date.now() - startedAt < settings.deadlineMs) {
+    const key = pickKey({ provider, nativeFormat: clientFormat, exclude: tried });
+    if (!key) break;
+    tried.add(key.id);
+    attempts += 1;
+    reserve(key, estTokens);
+    key.totals.req += 1;
+
+    const keyFormat = key.provider;
+    const sameFormat = keyFormat === clientFormat;
+    const wantsStream = Boolean(body.stream) && kind !== 'embeddings';
+    const upstreamStream = wantsStream && sameFormat;
+
+    let outbound;
+    if (sameFormat) {
+      outbound = bodyBuf;
+    } else {
+      if (kind === 'embeddings') {
+        settle(key, {});
+        continue;
+      }
+      const payload = buildPayload(kind, clientFormat, keyFormat, body);
+      outbound = Buffer.from(JSON.stringify({ ...payload, stream: upstreamStream || undefined }));
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(new Error('upstream timeout')), settings.upstreamTimeoutMs);
+
+    let upstream;
+    try {
+      upstream = await fetch(joinUrl(key.baseUrl, targetPath(kind, keyFormat)), {
+        method: 'POST',
+        headers: buildUpstreamHeaders(key, req),
+        body: outbound,
+        signal: controller.signal,
+        redirect: 'manual'
+      });
+    } catch (err) {
+      clearTimeout(timer);
+      settle(key, {});
+      penalize(key, { kind: 'network', message: err.message });
+      lastFailure = { status: 502, message: err.message };
+      continue;
+    }
+    clearTimeout(timer);
+
+    if (!upstream.ok) {
+      const text = await upstream.text().catch(() => '');
+      settle(key, {});
+      const category = classifyStatus(upstream.status);
+      if (category === 'client') {
+        key.totals.fail += 1;
+        let parsed = null;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          /* plain text error */
+        }
+        let outStatus = upstream.status;
+        let outBody = parsed || errPayload(clientFormat, upstream.status, text.slice(0, 500) || 'upstream error');
+        if (!sameFormat && parsed) {
+          if (clientFormat === 'openai') outBody = openaiResponseToAnthropic(parsed, model);
+          else outBody = anthropicResponseToOpenAI(parsed, model);
+          outStatus = upstream.status;
+        }
+        sendJson(res, outStatus, outBody);
+        chargeTotals({ ok: false });
+        chargeClient(client, { ok: false });
+        logRequest({
+          client: client.name,
+          model,
+          provider: key.provider,
+          key: key.label,
+          status: upstream.status,
+          ms: Date.now() - startedAt,
+          attempts,
+          err: text.slice(0, 160)
+        });
+        return;
+      }
+
+      const waited = penalize(key, {
+        kind: category,
+        retryAfterMs: parseRetryAfter(upstream.headers),
+        message: text.slice(0, 160)
+      });
+      key.totals.fail += 1;
+      if (category === 'auth' && rt(key).authFails >= settings.autoDisableAfterAuthFails) {
+        key.status = 'disabled';
+      }
+      lastFailure = { status: upstream.status, message: text.slice(0, 200), waited };
+      continue;
+    }
+
+    if (upstreamStream) {
+      await pipeStream({
+        upstream,
+        res,
+        req,
+        key,
+        client,
+        format: clientFormat,
+        startedAt,
+        estTokens,
+        controller
+      });
+      key.totals.ok += 1;
+      logRequest({
+        client: client.name,
+        model,
+        provider: key.provider,
+        key: key.label,
+        status: 200,
+        ms: Date.now() - startedAt,
+        attempts,
+        stream: true
+      });
+      return;
+    }
+
+    const rawBuf = Buffer.from(await upstream.arrayBuffer());
+    let parsed;
+    try {
+      parsed = JSON.parse(rawBuf.toString('utf8'));
+    } catch {
+      parsed = { raw: rawBuf.toString('utf8') };
+    }
+
+    const outBody = sameFormat
+      ? parsed
+      : clientFormat === 'anthropic'
+        ? openaiResponseToAnthropic(parsed, model)
+        : anthropicResponseToOpenAI(parsed, model);
+
+    const usage = usageFromJson(parsed, keyFormat);
+    if (!usage.tin && !usage.tout) usage.tin = estTokens;
+    settle(key, { tokenDelta: usage.tin + usage.tout - estTokens });
+    recordLatency(key, Date.now() - startedAt);
+    markSuccess(key, 200);
+    key.totals.ok += 1;
+    key.totals.tin += usage.tin;
+    key.totals.tout += usage.tout;
+    tickRequests(1, usage.tin + usage.tout);
+    chargeTotals({ tin: usage.tin, tout: usage.tout, ok: true });
+    chargeClient(client, { tin: usage.tin, tout: usage.tout, ok: true });
+    logRequest({
+      client: client.name,
+      model,
+      provider: key.provider,
+      key: key.label,
+      status: 200,
+      ms: Date.now() - startedAt,
+      attempts,
+      tin: usage.tin,
+      tout: usage.tout
+    });
+
+    if (wantsStream) {
+      res.writeHead(200, {
+        'content-type': 'text/event-stream; charset=utf-8',
+        'cache-control': 'no-cache, no-transform',
+        connection: 'keep-alive',
+        'x-hydra-key': key.label
+      });
+      const frame =
+        clientFormat === 'anthropic'
+          ? syntheticAnthropicStream(outBody, model)
+          : syntheticOpenAIStream(outBody, model);
+      res.end(frame);
+      return;
+    }
+
+    const out = sameFormat ? rawBuf : Buffer.from(JSON.stringify(outBody));
+    res.writeHead(200, {
+      'content-type': 'application/json; charset=utf-8',
+      'content-length': out.length,
+      'cache-control': 'no-store',
+      'x-hydra-key': key.label,
+      'x-hydra-provider': key.provider,
+      'x-hydra-attempts': String(attempts)
+    });
+    res.end(out);
+    return;
+  }
+
+  const status = lastFailure?.status === 429 ? 429 : 502;
+  sendJson(
+    res,
+    status,
+    errPayload(
+      clientFormat,
+      status,
+      lastFailure?.message || 'no upstream key available',
+      status === 429 ? 'rate_limit_error' : 'upstream_error'
+    )
+  );
+  chargeTotals({ ok: false });
+  chargeClient(client, { ok: false });
+  logRequest({
+    client: client.name,
+    model,
+    provider: provider || '-',
+    key: '-',
+    status,
+    ms: Date.now() - startedAt,
+    attempts,
+    err: lastFailure?.message || 'no upstream key available'
+  });
+}

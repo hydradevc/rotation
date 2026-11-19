@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<title>HYDRA — key rotator</title>
+<link rel="preload" href="/fonts/golos-variable.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/monaspace-neon.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="/app.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0e14'/%3E%3Cpath d='M8 22V10h3v5h10v-5h3v12h-3v-4H11v4z' fill='%234c8dff'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<div id="login" class="login hidden">
+  <div class="login-glow"></div>
+  <form class="login-card" id="login-form">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M7 24V8h4v6h10V8h4v16h-4v-6H11v6z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">HYDRA</span>
+        <span class="brand-sub" data-i18n="brand.tag">key rotator</span>
+      </span>
+    </div>
+    <h1 data-i18n="login.title">Sign in to HYDRA</h1>
+    <p class="muted" data-i18n="login.sub">One endpoint, one key, the whole pool behind it.</p>
+    <label class="field">
+      <span data-i18n="login.password">Admin password</span>
+      <input id="login-password" type="password" autocomplete="current-password" spellcheck="false" />
+    </label>
+    <button class="btn btn-primary btn-block" type="submit" data-i18n="login.submit">Unlock</button>
+    <div class="login-error" id="login-error" role="alert"></div>
+    <p class="login-hint" data-i18n="login.hint">Password is printed once on first start.</p>
+  </form>
+</div>
+
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M7 24V8h4v6h10V8h4v16h-4v-6H11v6z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">HYDRA</span>
+        <span class="brand-sub" data-i18n="brand.tag">key rotator</span>
+      </span>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button class="nav-item is-active" data-view="overview">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/></svg>
+        <span data-i18n="nav.overview">Overview</span>
+      </button>
+      <button class="nav-item" data-view="keys">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2a8 8 0 0 0-7.6 10.5L2 17v5h5v-3h3v-3h2.5A8 8 0 1 0 14 2Zm3 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg>
+        <span data-i18n="nav.keys">Key pool</span>
+      </button>
+      <button class="nav-item" data-view="access">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 6v6c0 5 3.8 9.2 9 10 5.2-.8 9-5 9-10V6l-9-4Zm0 4a3 3 0 0 1 3 3v1h1v5H8v-5h1V9a3 3 0 0 1 3-3Zm0 2a1 1 0 0 0-1 1v1h2V9a1 1 0 0 0-1-1Z"/></svg>
+        <span data-i18n="nav.access">Access keys</span>
+      </button>
+      <button class="nav-item" data-view="logs">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v2H4V4Zm0 5h10v2H4V9Zm0 5h16v2H4v-2Zm0 5h10v2H4v-2Z"/></svg>
+        <span data-i18n="nav.logs">Requests</span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm9 4-2.1-.9a7 7 0 0 0-.7-1.7l.9-2.1-1.4-1.4-2.1.9a7 7 0 0 0-1.7-.7L12.9 4h-2l-.9 2.1a7 7 0 0 0-1.7.7l-2.1-.9-1.4 1.4.9 2.1a7 7 0 0 0-.7 1.7L4 12v2l2.1.9a7 7 0 0 0 .7 1.7l-.9 2.1 1.4 1.4 2.1-.9a7 7 0 0 0 1.7.7l.9 2.1h2l.9-2.1a7 7 0 0 0 1.7-.7l2.1.9 1.4-1.4-.9-2.1a7 7 0 0 0 .7-1.7L20 14v-2Z"/></svg>
+        <span data-i18n="nav.settings">Settings</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="engine-line"><span class="dot dot-live"></span><span data-i18n="brand.status">engine online</span></div>
+      <div class="muted small">v1.0.0 · <span id="side-keys">0</span> keys</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 id="page-title">Overview</h1>
+        <p id="page-sub"></p>
+      </div>
+      <div class="topbar-actions">
+        <div class="seg" id="lang-switch" role="group" aria-label="Language">
+          <button data-lang="en" class="is-active">EN</button>
+          <button data-lang="ru">RU</button>
+        </div>
+        <div class="pill" id="live-pill"><span class="dot dot-live"></span><span data-i18n="top.live">live</span></div>
+        <button class="btn btn-ghost" id="logout" data-i18n="top.logout">Sign out</button>
+      </div>
+    </header>
+
+    <div class="views" id="views">
+
+      <section class="view" id="view-overview">
+        <div class="metrics">
+          <article class="metric">
+            <span class="metric-label" data-i18n="m.rps">Requests / sec</span>
+            <span class="metric-value" id="m-rps">0</span>
+            <span class="metric-hint" data-i18n="m.rps.hint">current second</span>
+            <canvas class="spark" data-spark="req"></canvas>
+          </article>
+          <article class="metric">
+            <span class="metric-label" data-i18n="m.tpm">Tokens / min</span>
+            <span class="metric-value" id="m-tpm">0</span>
+            <span class="metric-hint" data-i18n="m.tpm.hint">rolling 60 s</span>
+            <canvas class="spark" data-spark="tokens"></canvas>
+          </article>
+          <article class="metric">
+            <span class="metric-label" data-i18n="m.success">Success rate</span>
+            <span class="metric-value" id="m-success">—</span>
+            <span class="metric-hint" data-i18n="m.success.hint">since start</span>
+            <canvas class="spark" data-spark="success"></canvas>
+          </article>
+          <article class="metric">
+            <span class="metric-label" data-i18n="m.healthy">Healthy keys</span>
+            <span class="metric-value" id="m-healthy">0</span>
+            <span class="metric-hint" id="m-capacity">capacity —</span>
+          </article>
+        </div>
+
+        <div class="grid-2">
+          <article class="panel panel-chart">
+            <header class="panel-head">
+              <div>
+                <h2 data-i18n="chart.title">Traffic</h2>
+                <p data-i18n="chart.window">last 5 minutes</p>
+              </div>
+              <div class="legend">
+                <span class="legend-item"><i class="swatch swatch-req"></i><span data-i18n="chart.req">requests</span></span>
+                <span class="legend-item"><i class="swatch swatch-tok"></i><span data-i18n="chart.tokens">tokens</span></span>
+              </div>
+            </header>
+            <div class="chart-body"><canvas id="traffic"></canvas></div>
+          </article>
+
+          <article class="panel">
+            <header class="panel-head">
+              <div><h2 data-i18n="pool.title">Pool health</h2><p id="pool-sub">—</p></div>
+            </header>
+            <div class="pool-list" id="pool-list"></div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <header class="panel-head"><h2 data-i18n="recent.title">Recent requests</h2></header>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th data-i18n="col.time">Time</th>
+                  <th data-i18n="col.client">Client</th>
+                  <th data-i18n="col.model">Model</th>
+                  <th data-i18n="col.key">Upstream key</th>
+                  <th data-i18n="col.status">Status</th>
+                  <th data-i18n="col.latency">Latency</th>
+                  <th data-i18n="col.tokens">Tokens</th>
+                </tr>
+              </thead>
+              <tbody id="recent-body"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="recent-empty" data-i18n="recent.empty">No traffic yet.</div>
+        </article>
+      </section>
+
+      <section class="view hidden" id="view-keys">
+        <div class="keys-layout">
+          <article class="panel panel-import">
+            <header class="panel-head">
+              <div><h2 data-i18n="keys.import">Import keys</h2><p data-i18n="keys.importHint">One per line.</p></div>
+            </header>
+            <div class="form-grid">
+              <label class="field">
+                <span data-i18n="keys.provider">Provider</span>
+                <select id="import-provider">
+                  <option value="openai">OpenAI-compatible</option>
+                  <option value="anthropic">Anthropic</option>
+                </select>
+              </label>
+              <label class="field">
+                <span data-i18n="keys.baseUrl">Default base URL</span>
+                <input id="import-baseurl" placeholder="https://api.openai.com/v1" spellcheck="false" />
+              </label>
+            </div>
+            <label class="field">
+              <textarea id="import-text" rows="8" spellcheck="false" data-i18n-ph="keys.placeholder"></textarea>
+            </label>
+            <button class="btn btn-primary btn-block" id="import-btn" data-i18n="keys.importBtn">Add to pool</button>
+          </article>
+
+          <article class="panel">
+            <header class="panel-head panel-head-row">
+              <div><h2 data-i18n="keys.title">Key pool</h2><p id="keys-count">—</p></div>
+              <div class="head-actions">
+                <input class="search" id="keys-search" data-i18n-ph="keys.search" spellcheck="false" />
+                <button class="btn btn-ghost btn-danger-ghost" id="keys-clear" data-i18n="keys.deleteAll">Remove all</button>
+              </div>
+            </header>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th data-i18n="col.label">Label</th>
+                    <th data-i18n="col.secret">Key</th>
+                    <th data-i18n="col.rpm">RPM</th>
+                    <th data-i18n="col.tpm">TPM</th>
+                    <th data-i18n="col.latency">Latency</th>
+                    <th data-i18n="col.actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="keys-body"></tbody>
+              </table>
+            </div>
+            <div class="empty hidden" id="keys-empty"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view hidden" id="view-access">
+        <div class="grid-2 grid-access">
+          <article class="panel">
+            <header class="panel-head"><div><h2 data-i18n="access.create">Create access key</h2><p data-i18n="access.createSub">Hand one out per app.</p></div></header>
+            <div class="form-stack">
+              <label class="field">
+                <span data-i18n="access.name">Name</span>
+                <input id="client-name" data-i18n-ph="access.namePh" spellcheck="false" />
+              </label>
+              <div class="form-grid">
+                <label class="field">
+                  <span data-i18n="access.rpm">RPM limit</span>
+                  <input id="client-rpm" type="number" min="0" value="0" />
+                  <small data-i18n="access.rpmHint">0 = unlimited</small>
+                </label>
+                <label class="field">
+                  <span data-i18n="access.daily">Daily token budget</span>
+                  <input id="client-daily" type="number" min="0" value="0" />
+                  <small data-i18n="access.dailyHint">0 = unlimited</small>
+                </label>
+              </div>
+              <label class="field">
+                <span data-i18n="access.models">Allowed models</span>
+                <input id="client-models" data-i18n-ph="access.modelsHint" spellcheck="false" />
+              </label>
+              <button class="btn btn-primary btn-block" id="client-create" data-i18n="access.createBtn">Create key</button>
+            </div>
+          </article>
+
+          <article class="panel">
+            <header class="panel-head"><div><h2 data-i18n="nav.access">Access keys</h2><p id="clients-count">—</p></div></header>
+            <div class="client-list" id="client-list"></div>
+            <div class="empty hidden" id="clients-empty" data-i18n="access.empty">No access keys.</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view hidden" id="view-logs">
+        <article class="panel">
+          <header class="panel-head panel-head-row">
+            <div><h2 data-i18n="logs.title">Requests</h2><p data-i18n="logs.sub">Every call that passed through the rotator.</p></div>
+            <div class="seg" id="log-filter">
+              <button data-filter="all" class="is-active" data-i18n="logs.all">All</button>
+              <button data-filter="ok" data-i18n="logs.ok">Success</button>
+              <button data-filter="fail" data-i18n="logs.fail">Failed</button>
+            </div>
+          </header>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th data-i18n="col.time">Time</th>
+                  <th data-i18n="col.client">Client</th>
+                  <th data-i18n="col.model">Model</th>
+                  <th data-i18n="col.provider">Provider</th>
+                  <th data-i18n="col.key">Upstream key</th>
+                  <th data-i18n="col.status">Status</th>
+                  <th data-i18n="col.latency">Latency</th>
+                  <th data-i18n="col.tokens">Tokens</th>
+                </tr>
+              </thead>
+              <tbody id="logs-body"></tbody>
+            </table>
+          </div>
+          <div class="empty hidden" id="logs-empty" data-i18n="logs.empty">Nothing logged yet.</div>
+        </article>
+      </section>
+
+      <section class="view hidden" id="view-settings">
+        <form id="settings-form" class="settings-grid">
+          <article class="panel">
+            <header class="panel-head"><h2 data-i18n="settings.engine">Engine</h2></header>
+            <div class="form-grid">
+              <label class="field">
+                <span data-i18n="settings.retries">Attempts per request</span>
+                <input name="maxAttempts" type="number" min="1" max="50" />
+                <small data-i18n="settings.retriesHint">How many keys one request may try.</small>
+              </label>
+              <label class="field">
+                <span data-i18n="settings.deadline">Request deadline, ms</span>
+                <input name="deadlineMs" type="number" min="1000" />
+              </label>
+              <label class="field">
+                <span data-i18n="settings.cooldown">Cooldown base, ms</span>
+                <input name="cooldownBaseMs" type="number" min="100" />
+              </label>
+              <label class="field">
+                <span data-i18n="settings.cooldownMax">Cooldown ceiling, ms</span>
+                <input name="cooldownMaxMs" type="number" min="1000" />
+              </label>
+              <label class="field">
+                <span data-i18n="settings.sample">Sampling window</span>
+                <input name="sampleSize" type="number" min="1" max="64" />
+                <small data-i18n="settings.sampleHint">Candidates compared per pick.</small>
+              </label>
+              <label class="field">
+                <span data-i18n="settings.timeout">Upstream timeout, ms</span>
+                <input name="upstreamTimeoutMs" type="number" min="1000" />
+              </label>
+              <label class="field">
+                <span data-i18n="settings.streamIdle">Stream idle timeout, ms</span>
+                <input name="streamIdleMs" type="number" min="1000" />
+              </label>
+              <label class="field">
+                <span data-i18n="settings.language">Default panel language</span>
+                <select name="defaultLang">
+                  <option value="en">English</option>
+                  <option value="ru">Русский</option>
+                </select>
+              </label>
+            </div>
+          </article>
+
+          <article class="panel">
+            <header class="panel-head"><h2 data-i18n="settings.routing">Routing</h2></header>
+            <label class="field">
+              <span data-i18n="settings.routes">Model prefixes</span>
+              <textarea name="routes" rows="7" spellcheck="false" data-i18n-ph="settings.routesHint"></textarea>
+            </label>
+            <label class="field">
+              <span data-i18n="settings.aliases">Model aliases</span>
+              <textarea name="aliases" rows="4" spellcheck="false" data-i18n-ph="settings.aliasesHint"></textarea>
+            </label>
+            <label class="field">
+              <span data-i18n="settings.models">Advertised models</span>
+              <input name="models" spellcheck="false" />
+              <small data-i18n="settings.modelsHint">Comma separated.</small>
+            </label>
+            <button class="btn btn-primary" type="submit" data-i18n="settings.save">Save settings</button>
+          </article>
+        </form>
+
+        <article class="panel">
+          <header class="panel-head"><h2 data-i18n="settings.security">Security</h2></header>
+          <form id="password-form" class="form-grid form-grid-3">
+            <label class="field">
+              <span data-i18n="settings.currentPw">Current password</span>
+              <input name="current" type="password" autocomplete="current-password" />
+            </label>
+            <label class="field">
+              <span data-i18n="settings.newPw">New password</span>
+              <input name="next" type="password" autocomplete="new-password" />
+            </label>
+              <div class="field field-action">
+                <span>&nbsp;</span>
+                <button class="btn btn-ghost btn-fit" type="submit" data-i18n="settings.changePw">Change password</button>
+              </div>
+          </form>
+        </article>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div class="modal hidden" id="modal">
+  <div class="modal-card">
+    <p id="modal-text"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel" data-i18n="action.cancel">Cancel</button>
+      <button class="btn btn-danger" id="modal-ok" data-i18n="action.confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="/i18n.js"></script>
+<script src="/app.js" type="module"></script>
+</body>
+</html>
