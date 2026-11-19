@@ -7,8 +7,11 @@ import {
   settle,
   recordLatency,
   markSuccess,
-  penalize
+  penalize,
+  msUntilSlot
 } from './pool.js';
+import { observe } from './metrics.js';
+import { emit } from './alerts.js';
 import {
   openaiToAnthropic,
   anthropicToOpenAI,
@@ -21,6 +24,7 @@ import {
 const MAX_BODY = 32 * 1024 * 1024;
 const CLIENT_WINDOW = 60;
 const CLIENT_BUCKETS = 60;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const clientRuntime = new Map();
 
@@ -42,6 +46,19 @@ function clientWindow(client) {
     if (r.epoch[n] <= sec && r.epoch[n] > sec - CLIENT_WINDOW) total += r.req[n];
   }
   return total;
+}
+
+export function clientStats(client) {
+  const now = Date.now();
+  const sec = Math.floor(now / 1000);
+  const r = clientRuntime.get(client.id);
+  let used = 0;
+  if (r) {
+    for (let n = 0; n < CLIENT_BUCKETS; n++) {
+      if (r.epoch[n] <= sec && r.epoch[n] > sec - CLIENT_WINDOW) used += r.req[n];
+    }
+  }
+  return { rpmUsed: Math.round(used) };
 }
 
 function todayKey() {
@@ -66,13 +83,14 @@ export function readBody(req) {
   });
 }
 
-function sendJson(res, status, payload) {
+export function sendJson(res, status, payload, extraHeaders = {}) {
   const body = Buffer.from(JSON.stringify(payload));
   if (res.headersSent) return;
   res.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
     'content-length': body.length,
-    'cache-control': 'no-store'
+    'cache-control': 'no-store',
+    ...extraHeaders
   });
   res.end(body);
 }
@@ -87,7 +105,7 @@ function errPayload(format, status, message, type = 'invalid_request_error') {
   return {
     error: {
       message,
-      type: status === 429 ? 'rate_limit_error' : type,
+      type: status === 429 ? 'rate_limit_error' : status >= 500 ? 'upstream_error' : type,
       code: status
     }
   };
@@ -132,7 +150,7 @@ function targetPath(kind, provider) {
   return '/v1/chat/completions';
 }
 
-function parseRetryAfter(headers) {
+export function parseRetryAfter(headers) {
   const retryAfter = headers.get('retry-after');
   if (retryAfter) {
     const seconds = Number(retryAfter);
@@ -145,9 +163,7 @@ function parseRetryAfter(headers) {
     const match = /^(?:(\d+(?:\.\d+)?)h)?(?:(\d+(?:\.\d+)?)m)?(?:(\d+(?:\.\d+)?)s)?(?:(\d+(?:\.\d+)?)ms)?$/.exec(reset.trim());
     if (match) {
       const [, h, m, s, ms] = match;
-      return (
-        (Number(h || 0) * 3600 + Number(m || 0) * 60 + Number(s || 0)) * 1000 + Number(ms || 0)
-      );
+      return (Number(h || 0) * 3600 + Number(m || 0) * 60 + Number(s || 0)) * 1000 + Number(ms || 0);
     }
   }
   return 0;
@@ -180,18 +196,16 @@ function usageFromTail(tail) {
       tin = Math.max(tin, parsed.input_tokens || parsed.prompt_tokens || 0);
       tout = Math.max(tout, parsed.output_tokens || parsed.completion_tokens || 0);
     } catch {
-      /* ignore malformed fragment */
+      /* malformed fragment in the stream */
     }
   }
   if (!tin && !tout) return null;
   return { tin, tout };
 }
 
-function classifyStatus(status) {
-  if (status === 401 || status === 403) return 'auth';
-  if (status === 429) return 'rate';
-  if (status >= 500) return 'upstream';
-  return 'client';
+function isRetryable(status) {
+  const list = state.settings.retryStatuses || [];
+  return status === 401 || status === 403 || list.includes(status);
 }
 
 function buildUpstreamHeaders(key, req) {
@@ -207,6 +221,7 @@ function buildUpstreamHeaders(key, req) {
     headers.authorization = 'Bearer ' + key.key;
     if (req.headers['openai-organization']) headers['openai-organization'] = req.headers['openai-organization'];
     if (req.headers['openai-project']) headers['openai-project'] = req.headers['openai-project'];
+    if (req.headers['openai-beta']) headers['openai-beta'] = req.headers['openai-beta'];
   }
   return headers;
 }
@@ -221,10 +236,12 @@ function buildPayload(kind, clientFormat, keyFormat, body) {
 
 function clientAllowsModel(client, model) {
   if (!client.models || !client.models.length) return true;
-  return client.models.some((pattern) => (pattern.endsWith('*') ? model.startsWith(pattern.slice(0, -1)) : pattern === model));
+  return client.models.some((pattern) =>
+    pattern.endsWith('*') ? model.startsWith(pattern.slice(0, -1)) : pattern === model
+  );
 }
 
-function chargeClient(client, { tin = 0, tout = 0, ok }) {
+export function chargeClient(client, { tin = 0, tout = 0, ok }) {
   client.totals.req += 1;
   if (ok) client.totals.ok += 1;
   else client.totals.fail += 1;
@@ -245,13 +262,16 @@ function chargeTotals({ tin = 0, tout = 0, ok }) {
 }
 
 function logRequest(entry) {
-  pushLog({
-    ts: Date.now(),
-    ...entry
-  });
+  pushLog({ ts: Date.now(), ...entry });
 }
 
-async function pipeStream({ upstream, res, req, key, client, format: clientFormat, startedAt, estTokens, controller }) {
+function finishFailure(res, { clientFormat, status, message, retryAfterMs = 0 }) {
+  const headers = {};
+  if (retryAfterMs > 0) headers['retry-after'] = String(Math.max(1, Math.ceil(retryAfterMs / 1000)));
+  sendJson(res, status, errPayload(clientFormat, status, message), headers);
+}
+
+async function pipeStream({ upstream, res, req, key, client, startedAt, estTokens, controller }) {
   res.writeHead(200, {
     'content-type': 'text/event-stream; charset=utf-8',
     'cache-control': 'no-cache, no-transform',
@@ -276,7 +296,7 @@ async function pipeStream({ upstream, res, req, key, client, format: clientForma
     try {
       controller.abort();
     } catch {
-      /* already gone */
+      /* already closed */
     }
   };
   res.on('close', onClose);
@@ -287,7 +307,7 @@ async function pipeStream({ upstream, res, req, key, client, format: clientForma
       if (done) break;
       resetIdle();
       bytes += value.byteLength;
-      tail = (tail + Buffer.from(value).toString('utf8')).slice(-4096);
+      tail = (tail + Buffer.from(value).toString('utf8')).slice(-8192);
       if (!res.write(Buffer.from(value))) await once(res, 'drain');
     }
   } catch (err) {
@@ -297,6 +317,7 @@ async function pipeStream({ upstream, res, req, key, client, format: clientForma
     recordLatency(key, Date.now() - startedAt);
     chargeTotals({ ok: false });
     chargeClient(client, { ok: false });
+    observe({ ms: Date.now() - startedAt, status: 0, client: client.name, provider: key.provider, error: err.message });
     logRequest({
       client: client.name,
       model: '',
@@ -324,6 +345,21 @@ async function pipeStream({ upstream, res, req, key, client, format: clientForma
   tickRequests(1, outTokens + inTokens);
   chargeTotals({ tin: inTokens, tout: outTokens, ok: true });
   chargeClient(client, { tin: inTokens, tout: outTokens, ok: true });
+  observe({ ms: Date.now() - startedAt, status: 200, client: client.name, provider: key.provider });
+}
+
+function modelsPayload(format) {
+  const ids = new Set([
+    ...(state.settings.models || []),
+    ...Object.keys(state.settings.aliases || {}),
+    ...state.keys.map((k) => k.model).filter(Boolean)
+  ]);
+  const list = [...ids];
+  if (format === 'anthropic') {
+    const data = list.map((id) => ({ id, type: 'model', display_name: id, created_at: new Date(0).toISOString() }));
+    return { data, has_more: false, first_id: data[0]?.id || null, last_id: data[data.length - 1]?.id || null };
+  }
+  return { object: 'list', data: list.map((id) => ({ id, object: 'model', created_by: 'hydra', owned_by: 'hydra' })) };
 }
 
 export async function handleProxy(req, res, url, bodyBuf) {
@@ -341,16 +377,12 @@ export async function handleProxy(req, res, url, bodyBuf) {
   const { client } = auth;
 
   if (path === '/v1/models') {
-    const models = new Set(
-      [...(state.settings.models || []), ...Object.keys(state.settings.aliases || {}), ...state.keys.map((k) => k.model).filter(Boolean)]
-    );
-    const list = [...models].map((id) => ({ id, object: 'model', owned_by: 'hydra' }));
-    sendJson(res, 200, { object: 'list', data: list });
+    sendJson(res, 200, modelsPayload(clientFormat));
     return;
   }
 
   if (req.method !== 'POST') {
-    sendJson(res, 405, errPayload(clientFormat, 405, 'method not allowed', 'invalid_request_error'));
+    sendJson(res, 405, errPayload(clientFormat, 405, 'method not allowed'));
     return;
   }
 
@@ -368,7 +400,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
     sendJson(res, 400, errPayload(clientFormat, 400, 'model is required'));
     return;
   }
-  if (kind !== 'messages' && !clientAllowsModel(client, model)) {
+  if (!clientAllowsModel(client, model)) {
     sendJson(res, 403, errPayload(clientFormat, 403, `model ${model} is not allowed for this key`, 'permission_error'));
     return;
   }
@@ -376,13 +408,13 @@ export async function handleProxy(req, res, url, bodyBuf) {
   const day = todayKey();
   if (client.day.date !== day) client.day = { date: day, tokens: 0 };
   if (client.dailyTokens && client.day.tokens >= client.dailyTokens) {
-    sendJson(res, 429, errPayload(clientFormat, 429, 'daily token budget exhausted'));
+    sendJson(res, 429, errPayload(clientFormat, 429, 'daily token budget exhausted'), { 'retry-after': '60' });
     return;
   }
   if (client.rpm) {
     const used = clientWindow(client);
     if (used > client.rpm) {
-      sendJson(res, 429, errPayload(clientFormat, 429, 'client rpm limit reached'));
+      sendJson(res, 429, errPayload(clientFormat, 429, 'client rpm limit reached'), { 'retry-after': '5' });
       return;
     }
   }
@@ -390,14 +422,29 @@ export async function handleProxy(req, res, url, bodyBuf) {
   const startedAt = Date.now();
   const estTokens = estimateTokens(bodyBuf);
   const provider = providerForModel(model);
-  const tried = new Set();
   const settings = state.settings;
+  const tried = new Set();
   let attempts = 0;
   let lastFailure = null;
+  let waitedMs = 0;
+  const wantsStream = Boolean(body.stream) && kind !== 'embeddings';
 
   while (attempts < settings.maxAttempts && Date.now() - startedAt < settings.deadlineMs) {
     const key = pickKey({ provider, nativeFormat: clientFormat, exclude: tried });
-    if (!key) break;
+
+    if (!key) {
+      const left = settings.deadlineMs - (Date.now() - startedAt);
+      const wait = msUntilSlot({ provider });
+      const budget = Math.min(settings.queueWaitMs || 0, left);
+      if (wait !== null && wait <= budget - waitedMs) {
+        const pause = Math.max(wait, 25);
+        waitedMs += pause;
+        await sleep(pause);
+        continue;
+      }
+      break;
+    }
+
     tried.add(key.id);
     attempts += 1;
     reserve(key, estTokens);
@@ -405,7 +452,6 @@ export async function handleProxy(req, res, url, bodyBuf) {
 
     const keyFormat = key.provider;
     const sameFormat = keyFormat === clientFormat;
-    const wantsStream = Boolean(body.stream) && kind !== 'embeddings';
     const upstreamStream = wantsStream && sameFormat;
 
     let outbound;
@@ -435,6 +481,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
     } catch (err) {
       clearTimeout(timer);
       settle(key, {});
+      key.totals.fail += 1;
       penalize(key, { kind: 'network', message: err.message });
       lastFailure = { status: 502, message: err.message };
       continue;
@@ -444,63 +491,48 @@ export async function handleProxy(req, res, url, bodyBuf) {
     if (!upstream.ok) {
       const text = await upstream.text().catch(() => '');
       settle(key, {});
-      const category = classifyStatus(upstream.status);
-      if (category === 'client') {
-        key.totals.fail += 1;
+      key.totals.fail += 1;
+
+      if (!isRetryable(upstream.status)) {
         let parsed = null;
         try {
           parsed = JSON.parse(text);
         } catch {
-          /* plain text error */
+          /* upstream returned plain text */
         }
-        let outStatus = upstream.status;
         let outBody = parsed || errPayload(clientFormat, upstream.status, text.slice(0, 500) || 'upstream error');
         if (!sameFormat && parsed) {
-          if (clientFormat === 'openai') outBody = openaiResponseToAnthropic(parsed, model);
-          else outBody = anthropicResponseToOpenAI(parsed, model);
-          outStatus = upstream.status;
+          outBody =
+            clientFormat === 'openai'
+              ? openaiResponseToAnthropic(parsed, model)
+              : anthropicResponseToOpenAI(parsed, model);
         }
-        sendJson(res, outStatus, outBody);
+        const status = upstream.status;
+        const ms = Date.now() - startedAt;
         chargeTotals({ ok: false });
         chargeClient(client, { ok: false });
-        logRequest({
-          client: client.name,
-          model,
-          provider: key.provider,
-          key: key.label,
-          status: upstream.status,
-          ms: Date.now() - startedAt,
-          attempts,
-          err: text.slice(0, 160)
-        });
+        observe({ ms, status, model, client: client.name, provider: key.provider, error: text.slice(0, 60) });
+        logRequest({ client: client.name, model, provider: key.provider, key: key.label, status, ms, attempts, err: text.slice(0, 160) });
+        sendJson(res, status, outBody);
         return;
       }
 
+      const kindOfError = upstream.status === 401 || upstream.status === 403 ? 'auth' : upstream.status === 429 ? 'rate' : 'upstream';
       const waited = penalize(key, {
-        kind: category,
+        kind: kindOfError,
         retryAfterMs: parseRetryAfter(upstream.headers),
         message: text.slice(0, 160)
       });
-      key.totals.fail += 1;
-      if (category === 'auth' && rt(key).authFails >= settings.autoDisableAfterAuthFails) {
+      if (kindOfError === 'auth' && rt(key).authFails >= settings.autoDisableAfterAuthFails) {
         key.status = 'disabled';
+        emit('key-down', { keyId: key.id, label: key.label, fails: rt(key).authFails, error: key.lastError });
       }
       lastFailure = { status: upstream.status, message: text.slice(0, 200), waited };
       continue;
     }
 
     if (upstreamStream) {
-      await pipeStream({
-        upstream,
-        res,
-        req,
-        key,
-        client,
-        format: clientFormat,
-        startedAt,
-        estTokens,
-        controller
-      });
+      await pipeStream({ upstream, res, req, key, client, startedAt, estTokens, controller });
       key.totals.ok += 1;
       logRequest({
         client: client.name,
@@ -531,6 +563,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
 
     const usage = usageFromJson(parsed, keyFormat);
     if (!usage.tin && !usage.tout) usage.tin = estTokens;
+
     settle(key, { tokenDelta: usage.tin + usage.tout - estTokens });
     recordLatency(key, Date.now() - startedAt);
     markSuccess(key, 200);
@@ -540,6 +573,13 @@ export async function handleProxy(req, res, url, bodyBuf) {
     tickRequests(1, usage.tin + usage.tout);
     chargeTotals({ tin: usage.tin, tout: usage.tout, ok: true });
     chargeClient(client, { tin: usage.tin, tout: usage.tout, ok: true });
+    observe({
+      ms: Date.now() - startedAt,
+      status: 200,
+      model,
+      client: client.name,
+      provider: key.provider
+    });
     logRequest({
       client: client.name,
       model,
@@ -559,11 +599,9 @@ export async function handleProxy(req, res, url, bodyBuf) {
         connection: 'keep-alive',
         'x-hydra-key': key.label
       });
-      const frame =
-        clientFormat === 'anthropic'
-          ? syntheticAnthropicStream(outBody, model)
-          : syntheticOpenAIStream(outBody, model);
-      res.end(frame);
+      res.end(
+        clientFormat === 'anthropic' ? syntheticAnthropicStream(outBody, model) : syntheticOpenAIStream(outBody, model)
+      );
       return;
     }
 
@@ -580,19 +618,15 @@ export async function handleProxy(req, res, url, bodyBuf) {
     return;
   }
 
-  const status = lastFailure?.status === 429 ? 429 : 502;
-  sendJson(
-    res,
-    status,
-    errPayload(
-      clientFormat,
-      status,
-      lastFailure?.message || 'no upstream key available',
-      status === 429 ? 'rate_limit_error' : 'upstream_error'
-    )
-  );
+  const status = lastFailure?.status === 429 ? 429 : lastFailure ? 502 : 503;
+  const message =
+    status === 503
+      ? 'no upstream key available — add keys to the pool or wait for cooldowns'
+      : lastFailure?.message || 'upstream failed';
+  const retryAfter = lastFailure?.waited || Math.min(settings.queueWaitMs || 5000, 15000);
   chargeTotals({ ok: false });
   chargeClient(client, { ok: false });
+  observe({ ms: Date.now() - startedAt, status, model, client: client.name, provider: provider || '-', error: message.slice(0, 60) });
   logRequest({
     client: client.name,
     model,
@@ -601,6 +635,88 @@ export async function handleProxy(req, res, url, bodyBuf) {
     status,
     ms: Date.now() - startedAt,
     attempts,
-    err: lastFailure?.message || 'no upstream key available'
+    err: message
   });
+  emit('pool-exhausted', { model, attempts, status });
+  finishFailure(res, { clientFormat, status, message, retryAfterMs: retryAfter });
+}
+
+export async function quickChat({ model, messages, maxTokens = 512, temperature = 0.7 }) {
+  const startedAt = Date.now();
+  const settings = state.settings;
+  const provider = providerForModel(model);
+  const body = { model, messages, max_tokens: maxTokens, temperature };
+  const estTokens = estimateTokens(Buffer.from(JSON.stringify(body)));
+  const tried = new Set();
+  let attempts = 0;
+  let lastError = '';
+
+  while (attempts < Math.min(settings.maxAttempts, 6) && Date.now() - startedAt < 60000) {
+    const key = pickKey({ provider, nativeFormat: 'openai', exclude: tried });
+    if (!key) break;
+    tried.add(key.id);
+    attempts += 1;
+    reserve(key, estTokens);
+    key.totals.req += 1;
+
+    const payload = buildPayload('chat', 'openai', key.provider, body);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(new Error('timeout')), Math.min(settings.upstreamTimeoutMs, 60000));
+    try {
+      const upstream = await fetch(joinUrl(key.baseUrl, targetPath('chat', key.provider)), {
+        method: 'POST',
+        headers: buildUpstreamHeaders(key, { headers: {} }),
+        body: Buffer.from(JSON.stringify(payload)),
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      const text = await upstream.text();
+      settle(key, {});
+      if (!upstream.ok) {
+        key.totals.fail += 1;
+        penalize(key, {
+          kind: upstream.status === 401 || upstream.status === 403 ? 'auth' : 'rate',
+          retryAfterMs: parseRetryAfter(upstream.headers),
+          message: text.slice(0, 120)
+        });
+        lastError = text.slice(0, 300) || `HTTP ${upstream.status}`;
+        continue;
+      }
+      const parsed = JSON.parse(text);
+      const answer =
+        key.provider === 'anthropic'
+          ? (parsed.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('')
+          : parsed.choices?.[0]?.message?.content || '';
+      const usage = usageFromJson(parsed, key.provider);
+      recordLatency(key, Date.now() - startedAt);
+      markSuccess(key, 200);
+      key.totals.ok += 1;
+      key.totals.tin += usage.tin;
+      key.totals.tout += usage.tout;
+      observe({
+        ms: Date.now() - startedAt,
+        status: 200,
+        model,
+        client: 'playground',
+        provider: key.provider
+      });
+      return {
+        ok: true,
+        text: answer,
+        model: parsed.model || model,
+        key: key.label,
+        provider: key.provider,
+        ms: Date.now() - startedAt,
+        usage
+      };
+    } catch (err) {
+      clearTimeout(timer);
+      settle(key, {});
+      penalize(key, { kind: 'network', message: err.message });
+      lastError = err.message;
+    }
+  }
+
+  observe({ ms: Date.now() - startedAt, status: 502, model, client: 'playground', error: lastError.slice(0, 60) });
+  return { ok: false, error: lastError || 'no upstream key available', ms: Date.now() - startedAt };
 }

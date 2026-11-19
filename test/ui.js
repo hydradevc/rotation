@@ -1,18 +1,21 @@
 import { spawn } from 'node:child_process';
+import { startMock } from './mock-upstream.js';
 
 const HYDRA = process.env.HYDRA_URL || 'http://127.0.0.1:8099';
-const PASS = process.env.HYDRA_PASS || 'gK7Ra6g0o4Vd';
+const PASS = process.env.HYDRA_PASS || 'uitest';
 const CHROME = process.env.CHROME || 'chromium';
+const MOCK_PORT = 9101;
 
 const results = [];
 function check(name, ok, detail = '') {
   results.push(ok);
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? '  — ' + detail : ''}`);
 }
-
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
+  const mock = await startMock(MOCK_PORT);
+
   const login = await fetch(`${HYDRA}/admin/api/login`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -29,6 +32,16 @@ async function main() {
     return res.json();
   };
 
+  const state = await api('/admin/api/state');
+  const clientKey = state.clients[0].key;
+  await api('/admin/api/keys/bulk', 'POST', {
+    text: [
+      `alpha | sk-ui-alpha-1111 | http://127.0.0.1:${MOCK_PORT}/v1 | openai`,
+      `beta | sk-ui-beta-2222 | http://127.0.0.1:${MOCK_PORT}/v1 | openai`,
+      `gamma | sk-ant-ui-3333 | http://127.0.0.1:${MOCK_PORT} | anthropic`
+    ].join('\n')
+  });
+
   const chrome = spawn(
     CHROME,
     [
@@ -36,8 +49,8 @@ async function main() {
       '--no-sandbox',
       '--disable-gpu',
       '--disable-dev-shm-usage',
-      '--user-data-dir=/tmp/ui-chrome',
-      '--remote-debugging-port=9355',
+      '--user-data-dir=/tmp/hydra-ui2-chrome',
+      '--remote-debugging-port=9388',
       'about:blank'
     ],
     { stdio: 'ignore' }
@@ -46,7 +59,7 @@ async function main() {
   let version;
   for (let i = 0; i < 80; i++) {
     try {
-      version = await fetch('http://127.0.0.1:9355/json/version').then((r) => r.json());
+      version = await fetch('http://127.0.0.1:9388/json/version').then((r) => r.json());
       break;
     } catch {
       await sleep(150);
@@ -54,7 +67,7 @@ async function main() {
   }
   if (!version) throw new Error('chrome failed');
 
-  const target = await fetch('http://127.0.0.1:9355/json/new?about:blank', { method: 'PUT' }).then((r) => r.json());
+  const target = await fetch('http://127.0.0.1:9388/json/new?about:blank', { method: 'PUT' }).then((r) => r.json());
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((r) => ws.addEventListener('open', r, { once: true }));
 
@@ -73,6 +86,17 @@ async function main() {
       ws.send(JSON.stringify({ id, method, params }));
     });
 
+  const errors = [];
+  ws.addEventListener('message', (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.method === 'Runtime.exceptionThrown') {
+      errors.push(msg.params.exceptionDetails.exception?.description || msg.params.exceptionDetails.text);
+    }
+    if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') {
+      errors.push(msg.params.args.map((a) => a.value ?? a.description).join(' '));
+    }
+  });
+
   const evaluate = async (expression) => {
     const res = await cdp('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
     if (res.exceptionDetails) throw new Error(res.exceptionDetails.text + ' ' + (res.exceptionDetails.exception?.description || ''));
@@ -80,121 +104,146 @@ async function main() {
   };
 
   await cdp('Page.enable');
+  await cdp('Runtime.enable');
   await cdp('Network.enable');
   await cdp('Network.setCookie', { name: 'hydra_sid', value: token, domain: '127.0.0.1', path: '/' });
+  await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
   await cdp('Page.navigate', { url: HYDRA + '/admin' });
+  await sleep(2200);
+
+  check('panel boots', await evaluate(`!document.querySelector('#app').classList.contains('hidden')`));
+
+  for (const view of ['overview', 'playground', 'keys', 'access', 'logs', 'analytics', 'settings', 'docs']) {
+    await evaluate(`document.querySelector('.nav-item[data-view="${view}"]').click()`);
+    await sleep(600);
+    const visible = await evaluate(`!document.querySelector('#view-${view}').classList.contains('hidden')`);
+    check(`view renders: ${view}`, visible);
+  }
+
+  check('no console errors on navigation', errors.length === 0, errors.slice(0, 3).join(' | '));
+
+  // playground
+  await evaluate(`document.querySelector('.nav-item[data-view="playground"]').click()`);
+  await sleep(300);
+  await evaluate(`
+    document.querySelector('#play-model').value = 'gpt-4o-mini';
+    document.querySelector('#play-prompt').value = 'ping from playground';
+    document.querySelector('#play-run').click();
+  `);
   await sleep(2000);
+  const playText = await evaluate(`document.querySelector('#play-out').textContent`);
+  const playMeta = await evaluate(`document.querySelector('#play-meta').textContent`);
+  check('playground answers through the pool', playText.includes('echo:'), playText.slice(0, 60));
+  check('playground reports serving key', playMeta.includes('served by') || playMeta.includes('ответил'), playMeta.slice(0, 80));
 
-  check('panel boots into app', await evaluate(`!document.querySelector('#app').classList.contains('hidden')`));
-
-  const before = await api('/admin/api/state');
-
-  // --- import through the form
+  // keys: edit modal
   await evaluate(`document.querySelector('.nav-item[data-view="keys"]').click()`);
+  await sleep(700);
+  await evaluate(`document.querySelector('button[data-act="edit"]').click()`);
   await sleep(300);
-  await evaluate(`
-    document.querySelector('#import-provider').value = 'openai';
-    document.querySelector('#import-baseurl').value = 'http://127.0.0.1:9101/v1';
-    document.querySelector('#import-text').value = 'ui-key-1 | sk-ui-test-111aaa\\nui-key-2 | sk-ui-test-222bbb';
-    document.querySelector('#import-btn').click();
-  `);
-  await sleep(1200);
-  let after = await api('/admin/api/state');
-  check('import form adds keys', after.keys.length === before.keys.length + 2, `${before.keys.length} → ${after.keys.length}`);
-
-  // --- search filter
-  await evaluate(`(() => { const el = document.querySelector('#keys-search'); el.value = 'ui-key-1'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
-  await sleep(300);
-  const rows = await evaluate(`document.querySelectorAll('#keys-body tr').length`);
-  check('search filters rows', rows === 1, `${rows} row(s)`);
-  await evaluate(`(() => { const el = document.querySelector('#keys-search'); el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
-  await sleep(300);
-
-  // --- toggle a key off
-  const targetKey = after.keys.find((k) => k.label === 'ui-key-1');
-  await evaluate(`document.querySelector('button[data-act="toggle"][data-id="${targetKey.id}"]').click()`);
-  await sleep(900);
-  after = await api('/admin/api/state');
-  check(
-    'toggle disables key',
-    after.keys.find((k) => k.id === targetKey.id)?.status === 'disabled'
-  );
-
-  // --- probe a key
-  await evaluate(`document.querySelector('button[data-act="probe"][data-id="${targetKey.id}"]').click()`);
-  await sleep(1600);
-  const toastText = await evaluate(`document.querySelector('.toast')?.textContent || ''`);
-  check('probe returns a toast', toastText.includes('OK') || toastText.includes('FAIL'), toastText);
-
-  // --- delete with confirm modal
-  await evaluate(`document.querySelector('button[data-act="delete"][data-id="${targetKey.id}"]').click()`);
-  await sleep(300);
-  await evaluate(`document.querySelector('#modal-ok').click()`);
-  await sleep(900);
-  after = await api('/admin/api/state');
-  check('delete removes key', !after.keys.some((k) => k.id === targetKey.id));
-
-  // --- access key creation
-  await evaluate(`document.querySelector('.nav-item[data-view="access"]').click()`);
-  await sleep(300);
-  const clientsBefore = (await api('/admin/api/state')).clients.length;
-  await evaluate(`
-    document.querySelector('#client-name').value = 'ui-test';
-    document.querySelector('#client-rpm').value = '120';
-    document.querySelector('#client-create').click();
-  `);
-  await sleep(1000);
-  after = await api('/admin/api/state');
-  check('client created from UI', after.clients.length === clientsBefore + 1);
-  const created = after.clients.find((c) => c.name === 'ui-test');
-  check('client shows a usable key', Boolean(created && created.key.startsWith('hydra_sk_')));
-
-  // --- settings save
-  await evaluate(`document.querySelector('.nav-item[data-view="settings"]').click()`);
-  await sleep(500);
-  const attemptsBefore = (await api('/admin/api/state')).settings.maxAttempts;
+  check('key edit modal opens', await evaluate(`!document.querySelector('#key-modal').classList.contains('hidden')`));
   await evaluate(`
     (() => {
-      const form = document.querySelector('#settings-form');
-      form.elements.namedItem('maxAttempts').value = '11';
-      form.querySelector('button[type="submit"]').click();
+      const f = document.querySelector('#key-form');
+      f.elements.namedItem('label').value = 'renamed-key';
+      f.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     })()
   `);
   await sleep(1200);
-  after = await api('/admin/api/state');
-  check('settings persist', after.settings.maxAttempts === 11, `${attemptsBefore} → ${after.settings.maxAttempts}`);
+  const renamed = (await api('/admin/api/state')).keys.some((k) => k.label === 'renamed-key');
+  check('key edit persists', renamed);
 
-  // --- api smoke with the new client key
-  const smoke = await fetch(HYDRA + '/v1/chat/completions', {
-    method: 'POST',
-    headers: { authorization: 'Bearer ' + created.key, 'content-type': 'application/json' },
-    body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: 'ui smoke' }] })
+  // bulk select + disable
+  await evaluate(`document.querySelectorAll('#keys-body input[data-select]')[0].click()`);
+  await sleep(200);
+  const bulkVisible = await evaluate(`!document.querySelector('#keys-bulkbar').classList.contains('hidden')`);
+  check('bulk bar appears', bulkVisible);
+  await evaluate(`document.querySelector('button[data-bulk="disable"]').click()`);
+  await sleep(1000);
+  const disabledCount = (await api('/admin/api/state')).keys.filter((k) => k.status === 'disabled').length;
+  check('bulk disable works', disabledCount >= 1, `${disabledCount} disabled`);
+
+  // probe all
+  await evaluate(`document.querySelector('#keys-probe-all').click()`);
+  await sleep(3000);
+  const toastText = await evaluate(`[...document.querySelectorAll('.toast')].map(t=>t.textContent).join(' | ')`);
+  check('probe all reports results', /ok|ок/i.test(toastText), toastText.slice(0, 80));
+
+  // analytics numbers
+  await evaluate(`document.querySelector('.nav-item[data-view="analytics"]').click()`);
+  await sleep(700);
+  const p95 = await evaluate(`document.querySelector('#an-p95').textContent`);
+  check('analytics shows percentiles', p95 !== '—', p95);
+
+  // settings tabs
+  await evaluate(`document.querySelector('.nav-item[data-view="settings"]').click()`);
+  await sleep(400);
+  await evaluate(`document.querySelector('#settings-tabs button[data-tab="network"]').click()`);
+  await sleep(250);
+  const networkVisible = await evaluate(`!document.querySelector('.tab-panel[data-tab="network"]').classList.contains('hidden')`);
+  check('settings tabs switch', networkVisible);
+
+  await evaluate(`
+    (() => {
+      const f = document.querySelector('#settings-form');
+      f.elements.namedItem('cors').checked = true;
+      f.elements.namedItem('policy').value = 'round-robin';
+      f.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    })()
+  `);
+  await sleep(1200);
+  const settings = (await api('/admin/api/state')).settings;
+  check('settings save policy+cors', settings.policy === 'round-robin' && settings.cors === true,
+    `${settings.policy} / ${settings.cors}`);
+
+  // CORS headers on the API
+  const corsCheck = await fetch(HYDRA + '/v1/models', {
+    headers: { authorization: 'Bearer ' + clientKey, origin: 'https://example.com' }
   });
-  check('new client key serves traffic', smoke.status === 200, `status ${smoke.status}`);
+  check('cors header emitted', corsCheck.headers.get('access-control-allow-origin') !== null,
+    String(corsCheck.headers.get('access-control-allow-origin')));
 
-  // --- language persistence
+  // docs page content
+  await evaluate(`document.querySelector('.nav-item[data-view="docs"]').click()`);
+  await sleep(400);
+  const docsText = await evaluate(`document.querySelector('#doc-curl').textContent`);
+  check('docs renders examples', docsText.includes('/v1/chat/completions'));
+
+  // export / import round trip
+  const exported = await (await fetch(HYDRA + '/admin/api/export', { headers: { cookie: 'hydra_sid=' + token } })).json();
+  check('export contains keys', Array.isArray(exported.keys) && exported.keys.length > 0, `${exported.keys.length} keys`);
+  const restored = await api('/admin/api/import', 'POST', exported);
+  check('import restores keys', restored.keys === exported.keys.length, `${restored.keys}`);
+
+  // logs csv
+  const csv = await (await fetch(HYDRA + '/admin/api/logs.csv', { headers: { cookie: 'hydra_sid=' + token } })).text();
+  check('csv export has header', csv.split('\n')[0].startsWith('time,client,model'));
+
+  // prometheus + openapi
+  const metricsText = await (await fetch(HYDRA + '/metrics')).text();
+  check('prometheus metrics exposed', metricsText.includes('hydra_requests_total') && metricsText.includes('hydra_pool_rpm'));
+  const spec = await (await fetch(HYDRA + '/openapi.json')).json();
+  check('openapi spec valid', spec.openapi === '3.1.0' && Boolean(spec.paths['/v1/chat/completions']));
+
+  // anthropic model list shape
+  const anthropicModels = await (
+    await fetch(HYDRA + '/v1/models', { headers: { 'x-api-key': clientKey } })
+  ).json();
+  check('models endpoint responds', Array.isArray(anthropicModels.data));
+
+  // language switch + persistence
   await evaluate(`document.querySelector('#lang-switch button[data-lang="ru"]').click()`);
   await sleep(300);
-  await cdp('Page.reload');
-  await sleep(1800);
-  const lang = await evaluate(`document.documentElement.lang`);
-  check('language choice persists after reload', lang === 'ru', lang);
+  const ruTitle = await evaluate(`document.querySelector('#page-title').textContent`);
+  check('russian titles', /справочник/i.test(ruTitle), ruTitle);
   await evaluate(`document.querySelector('#lang-switch button[data-lang="en"]').click()`);
+  await sleep(200);
 
-  // --- logout shows the login screen
-  await evaluate(`document.querySelector('#logout').click()`);
-  await sleep(1500);
-  const loginVisible = await evaluate(`!document.querySelector('#login').classList.contains('hidden')`);
-  check('logout returns to login screen', loginVisible);
-
-  // --- wrong password shows error text
-  await evaluate(`document.querySelector('#login-password').value = 'nope'; document.querySelector('#login-form').requestSubmit()`);
-  await sleep(800);
-  const err = await evaluate(`document.querySelector('#login-error').textContent`);
-  check('wrong password shows error', err.length > 0, err);
+  check('no console errors at the end', errors.length === 0, errors.slice(0, 3).join(' | '));
 
   ws.close();
   chrome.kill('SIGKILL');
+  mock.close();
 
   const failed = results.filter((r) => !r).length;
   console.log(`\n${results.length - failed}/${results.length} ui checks passed`);

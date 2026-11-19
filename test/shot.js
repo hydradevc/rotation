@@ -48,6 +48,10 @@ async function prepare(token) {
     lines.push(`free-tier-${i} | sk-limit-3-${i}k${i} | http://127.0.0.1:9101/v1 | openai`);
   }
   await admin(token, '/admin/api/keys/bulk', 'POST', { text: lines.join('\n') });
+  const seeded = await admin(token, '/admin/api/state');
+  for (const key of seeded.keys) {
+    await admin(token, `/admin/api/keys/${key.id}`, 'PATCH', { rpm: 600, tpm: 200000 });
+  }
   await admin(token, '/admin/api/clients', 'POST', { name: 'backend', rpm: 600, dailyTokens: 200000, models: [] });
   await admin(token, '/admin/api/clients', 'POST', { name: 'laptop', rpm: 120, dailyTokens: 50000, models: [] });
   return clientKey;
@@ -171,11 +175,21 @@ async function main() {
   await shot('logs', 'logs');
   await shot('settings', 'settings');
 
+  await cdp(ws, 'Runtime.evaluate', {
+    expression: `document.querySelector('.nav-item[data-view="playground"]').click();
+      document.querySelector('#play-model').value = 'gpt-4o-mini';
+      document.querySelector('#play-prompt').value = 'Explain in two sentences why a key pool beats one API key.';
+      document.querySelector('#play-run').click();`
+  });
+  await new Promise((r) => setTimeout(r, 2500));
+  await shot('playground', null, { wait: 600 });
+  await shot('analytics', 'analytics');
+  await shot('docs', 'docs');
+
   await cdp(ws, 'Runtime.evaluate', { expression: `document.querySelector('#lang-switch button[data-lang="ru"]').click()` });
   await cdp(ws, 'Runtime.evaluate', { expression: `document.querySelector('.nav-item[data-view="overview"]').click()` });
   await new Promise((r) => setTimeout(r, 900));
   await shot('overview-ru', null, { wait: 500 });
-
   await cdp(ws, 'Emulation.setDeviceMetricsOverride', { width: 430, height: 940, deviceScaleFactor: 2, mobile: true });
   await new Promise((r) => setTimeout(r, 800));
   await shot('mobile', 'overview', { wait: 900 });

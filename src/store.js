@@ -16,6 +16,15 @@ const DEFAULT_SETTINGS = {
   cooldownMaxMs: 60000,
   sampleSize: 5,
   autoDisableAfterAuthFails: 5,
+  policy: 'smart',
+  queueWaitMs: 5000,
+  circuitThreshold: 4,
+  circuitCooldownMs: 120000,
+  models: [],
+  cors: false,
+  corsOrigin: '*',
+  webhookUrl: '',
+  webhookEvents: ['key-down', 'pool-exhausted'],
   retryStatuses: [408, 409, 425, 429, 500, 502, 503, 504, 529],
   modelRoutes: {
     claude: 'anthropic',
@@ -51,14 +60,16 @@ export function maskKey(key = '') {
 
 export function normalizeKey(input) {
   const provider = input.provider === 'anthropic' ? 'anthropic' : 'openai';
+  const rawKey = String(input.key || '').trim();
+  if (!rawKey) return null;
   return {
     id: newId('k'),
-    label: String(input.label || '').trim() || maskKey(String(input.key || '')),
+    label: String(input.label || '').trim() || maskKey(rawKey),
     provider,
     baseUrl: String(
       input.baseUrl || (provider === 'anthropic' ? 'https://api.anthropic.com' : 'https://api.openai.com/v1')
     ).replace(/\/+$/, ''),
-    key: String(input.key || '').trim(),
+    key: rawKey,
     weight: clampNum(input.weight, 1, 1, 100),
     rpm: clampNum(input.rpm, 60, 1, 1e6),
     tpm: clampNum(input.tpm, 0, 0, 1e9),

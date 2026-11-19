@@ -13,7 +13,6 @@
 <body>
 
 <div id="login" class="login hidden">
-  <div class="login-glow"></div>
   <form class="login-card" id="login-form">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">
@@ -53,6 +52,10 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/></svg>
         <span data-i18n="nav.overview">Overview</span>
       </button>
+      <button class="nav-item" data-view="playground">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5Z"/></svg>
+        <span data-i18n="nav.playground">Playground</span>
+      </button>
       <button class="nav-item" data-view="keys">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2a8 8 0 0 0-7.6 10.5L2 17v5h5v-3h3v-3h2.5A8 8 0 1 0 14 2Zm3 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg>
         <span data-i18n="nav.keys">Key pool</span>
@@ -65,15 +68,23 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v2H4V4Zm0 5h10v2H4V9Zm0 5h16v2H4v-2Zm0 5h10v2H4v-2Z"/></svg>
         <span data-i18n="nav.logs">Requests</span>
       </button>
+      <button class="nav-item" data-view="analytics">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4h2v14h14v2H4Zm5-3V9h3v8H9Zm5 0V6h3v11h-3Zm5 0v-5h3v5h-3Z"/></svg>
+        <span data-i18n="nav.analytics">Analytics</span>
+      </button>
       <button class="nav-item" data-view="settings">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm9 4-2.1-.9a7 7 0 0 0-.7-1.7l.9-2.1-1.4-1.4-2.1.9a7 7 0 0 0-1.7-.7L12.9 4h-2l-.9 2.1a7 7 0 0 0-1.7.7l-2.1-.9-1.4 1.4.9 2.1a7 7 0 0 0-.7 1.7L4 12v2l2.1.9a7 7 0 0 0 .7 1.7l-.9 2.1 1.4 1.4 2.1-.9a7 7 0 0 0 1.7.7l.9 2.1h2l.9-2.1a7 7 0 0 0 1.7-.7l2.1.9 1.4-1.4-.9-2.1a7 7 0 0 0 .7-1.7L20 14v-2Z"/></svg>
         <span data-i18n="nav.settings">Settings</span>
+      </button>
+      <button class="nav-item" data-view="docs">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h9l5 5v13H5V3Zm8 1.5V9h4.5L13 4.5ZM7 12h10v2H7v-2Zm0 4h10v2H7v-2Z"/></svg>
+        <span data-i18n="nav.docs">API reference</span>
       </button>
     </nav>
 
     <div class="sidebar-foot">
       <div class="engine-line"><span class="dot dot-live"></span><span data-i18n="brand.status">engine online</span></div>
-      <div class="muted small">v1.0.0 · <span id="side-keys">0</span> keys</div>
+      <div class="muted small">v1.1.0 · <span id="side-keys">0</span> keys</div>
     </div>
   </aside>
 
@@ -95,6 +106,7 @@
 
     <div class="views" id="views">
 
+      <!-- OVERVIEW -->
       <section class="view" id="view-overview">
         <div class="metrics">
           <article class="metric">
@@ -113,12 +125,21 @@
             <span class="metric-label" data-i18n="m.success">Success rate</span>
             <span class="metric-value" id="m-success">—</span>
             <span class="metric-hint" data-i18n="m.success.hint">since start</span>
-            <canvas class="spark" data-spark="success"></canvas>
+          </article>
+          <article class="metric">
+            <span class="metric-label" data-i18n="m.latency">P95 latency</span>
+            <span class="metric-value" id="m-latency">—</span>
+            <span class="metric-hint" data-i18n="m.latency.hint">request time</span>
           </article>
           <article class="metric">
             <span class="metric-label" data-i18n="m.healthy">Healthy keys</span>
             <span class="metric-value" id="m-healthy">0</span>
             <span class="metric-hint" id="m-capacity">capacity —</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label" data-i18n="m.errors">Errors</span>
+            <span class="metric-value" id="m-errors">0</span>
+            <span class="metric-hint" id="m-errors-hint" data-i18n="m.errors.hint">of all requests</span>
           </article>
         </div>
 
@@ -146,7 +167,10 @@
         </div>
 
         <article class="panel">
-          <header class="panel-head"><h2 data-i18n="recent.title">Recent requests</h2></header>
+          <header class="panel-head panel-head-row">
+            <h2 data-i18n="recent.title">Recent requests</h2>
+            <button class="btn btn-ghost btn-sm" id="recent-more" data-view-jump="logs" data-i18n="nav.logs">Requests</button>
+          </header>
           <div class="table-wrap">
             <table class="table">
               <thead>
@@ -163,10 +187,48 @@
               <tbody id="recent-body"></tbody>
             </table>
           </div>
-          <div class="empty" id="recent-empty" data-i18n="recent.empty">No traffic yet.</div>
+          <div class="empty hidden" id="recent-empty" data-i18n="recent.empty">No traffic yet.</div>
         </article>
       </section>
 
+      <!-- PLAYGROUND -->
+      <section class="view hidden" id="view-playground">
+        <div class="grid-2 grid-play">
+          <article class="panel">
+            <header class="panel-head"><div><h2 data-i18n="play.request">Request</h2><p data-i18n="play.sub">Send a prompt through the pool.</p></div></header>
+            <div class="form-stack">
+              <label class="field">
+                <span data-i18n="play.model">Model</span>
+                <input id="play-model" list="play-models" value="gpt-4o-mini" spellcheck="false" />
+                <datalist id="play-models"></datalist>
+              </label>
+              <label class="field">
+                <span data-i18n="play.prompt">Prompt</span>
+                <textarea id="play-prompt" rows="6" data-i18n-ph="play.promptPh"></textarea>
+              </label>
+              <div class="form-grid">
+                <label class="field">
+                  <span data-i18n="play.maxTokens">Max tokens</span>
+                  <input id="play-max" type="number" min="16" max="4096" value="256" />
+                </label>
+                <label class="field">
+                  <span data-i18n="play.temp">Temperature</span>
+                  <input id="play-temp" type="number" min="0" max="2" step="0.1" value="0.7" />
+                </label>
+              </div>
+              <button class="btn btn-primary" id="play-run" data-i18n="play.run">Run through pool</button>
+              <small class="muted" data-i18n="play.hint">Runs a real request through your pool.</small>
+            </div>
+          </article>
+
+          <article class="panel">
+            <header class="panel-head"><div><h2 data-i18n="play.answer">Answer</h2><p id="play-meta">—</p></div></header>
+            <div class="play-out" id="play-out"><span class="muted" data-i18n="play.empty">The answer appears here.</span></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- KEYS -->
       <section class="view hidden" id="view-keys">
         <div class="keys-layout">
           <article class="panel panel-import">
@@ -197,13 +259,33 @@
               <div><h2 data-i18n="keys.title">Key pool</h2><p id="keys-count">—</p></div>
               <div class="head-actions">
                 <input class="search" id="keys-search" data-i18n-ph="keys.search" spellcheck="false" />
-                <button class="btn btn-ghost btn-danger-ghost" id="keys-clear" data-i18n="keys.deleteAll">Remove all</button>
+                <select class="select-sm" id="keys-sort" aria-label="Sort">
+                  <option value="default" data-i18n="keys.sortDefault">Default</option>
+                  <option value="rpm" data-i18n="keys.sortRpm">Load</option>
+                  <option value="latency" data-i18n="keys.sortLatency">Latency</option>
+                  <option value="fails" data-i18n="keys.sortErrors">Failures</option>
+                  <option value="label" data-i18n="keys.sortLabel">Label</option>
+                </select>
+                <button class="btn btn-sm" id="keys-probe-all" data-i18n="keys.probeAll">Probe all</button>
+                <button class="btn btn-sm" id="keys-export" data-i18n="keys.export">Export</button>
+                <button class="btn btn-sm" id="keys-restore" data-i18n="keys.importFile">Restore</button>
+                <input type="file" id="keys-file" accept="application/json" class="hidden" />
+                <button class="btn btn-sm btn-danger-ghost" id="keys-clear" data-i18n="keys.deleteAll">Remove all</button>
               </div>
             </header>
+            <div class="bulkbar hidden" id="keys-bulkbar">
+              <span class="mono" id="keys-selected-count"></span>
+              <div class="bulkbar-actions">
+                <button class="btn btn-sm" data-bulk="enable" data-i18n="keys.bulkEnable">Enable</button>
+                <button class="btn btn-sm" data-bulk="disable" data-i18n="keys.bulkDisable">Disable</button>
+                <button class="btn btn-sm btn-danger-ghost" data-bulk="delete" data-i18n="keys.bulkDelete">Delete</button>
+              </div>
+            </div>
             <div class="table-wrap">
-              <table class="table">
+              <table class="table table-keys">
                 <thead>
                   <tr>
+                    <th class="th-check"><input type="checkbox" id="keys-select-all" aria-label="select all" /></th>
                     <th data-i18n="col.label">Label</th>
                     <th data-i18n="col.secret">Key</th>
                     <th data-i18n="col.rpm">RPM</th>
@@ -220,6 +302,7 @@
         </div>
       </section>
 
+      <!-- ACCESS -->
       <section class="view hidden" id="view-access">
         <div class="grid-2 grid-access">
           <article class="panel">
@@ -257,14 +340,20 @@
         </div>
       </section>
 
+      <!-- LOGS -->
       <section class="view hidden" id="view-logs">
         <article class="panel">
           <header class="panel-head panel-head-row">
             <div><h2 data-i18n="logs.title">Requests</h2><p data-i18n="logs.sub">Every call that passed through the rotator.</p></div>
-            <div class="seg" id="log-filter">
-              <button data-filter="all" class="is-active" data-i18n="logs.all">All</button>
-              <button data-filter="ok" data-i18n="logs.ok">Success</button>
-              <button data-filter="fail" data-i18n="logs.fail">Failed</button>
+            <div class="head-actions">
+              <input class="search" id="logs-search" data-i18n-ph="logs.search" spellcheck="false" />
+              <div class="seg" id="log-filter">
+                <button data-filter="all" class="is-active" data-i18n="logs.all">All</button>
+                <button data-filter="ok" data-i18n="logs.ok">Success</button>
+                <button data-filter="fail" data-i18n="logs.fail">Failed</button>
+              </div>
+              <button class="btn btn-sm" id="logs-pause" data-i18n="logs.pause">Pause</button>
+              <button class="btn btn-sm" id="logs-csv" data-i18n="logs.export">Export CSV</button>
             </div>
           </header>
           <div class="table-wrap">
@@ -288,86 +377,306 @@
         </article>
       </section>
 
-      <section class="view hidden" id="view-settings">
-        <form id="settings-form" class="settings-grid">
+      <!-- ANALYTICS -->
+      <section class="view hidden" id="view-analytics">
+        <div class="metrics metrics-3">
+          <article class="metric">
+            <span class="metric-label" data-i18n="an.p50">P50</span>
+            <span class="metric-value" id="an-p50">—</span>
+            <span class="metric-hint" data-i18n="an.sinceStart">since start</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label" data-i18n="an.p95">P95</span>
+            <span class="metric-value" id="an-p95">—</span>
+            <span class="metric-hint" data-i18n="an.sinceStart">since start</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label" data-i18n="an.p99">P99</span>
+            <span class="metric-value" id="an-p99">—</span>
+            <span class="metric-hint" data-i18n="an.sinceStart">since start</span>
+          </article>
+        </div>
+
+        <div class="grid-2">
+          <article class="panel panel-chart">
+            <header class="panel-head">
+              <div><h2 data-i18n="chart.title">Traffic</h2><p data-i18n="chart.window">last 5 minutes</p></div>
+              <div class="legend">
+                <span class="legend-item"><i class="swatch swatch-req"></i><span data-i18n="chart.req">requests</span></span>
+                <span class="legend-item"><i class="swatch swatch-tok"></i><span data-i18n="chart.tokens">tokens</span></span>
+              </div>
+            </header>
+            <div class="chart-body"><canvas id="analytics-chart"></canvas></div>
+          </article>
+
           <article class="panel">
-            <header class="panel-head"><h2 data-i18n="settings.engine">Engine</h2></header>
-            <div class="form-grid">
-              <label class="field">
-                <span data-i18n="settings.retries">Attempts per request</span>
-                <input name="maxAttempts" type="number" min="1" max="50" />
-                <small data-i18n="settings.retriesHint">How many keys one request may try.</small>
-              </label>
-              <label class="field">
-                <span data-i18n="settings.deadline">Request deadline, ms</span>
-                <input name="deadlineMs" type="number" min="1000" />
-              </label>
-              <label class="field">
-                <span data-i18n="settings.cooldown">Cooldown base, ms</span>
-                <input name="cooldownBaseMs" type="number" min="100" />
-              </label>
-              <label class="field">
-                <span data-i18n="settings.cooldownMax">Cooldown ceiling, ms</span>
-                <input name="cooldownMaxMs" type="number" min="1000" />
-              </label>
-              <label class="field">
-                <span data-i18n="settings.sample">Sampling window</span>
-                <input name="sampleSize" type="number" min="1" max="64" />
-                <small data-i18n="settings.sampleHint">Candidates compared per pick.</small>
-              </label>
-              <label class="field">
-                <span data-i18n="settings.timeout">Upstream timeout, ms</span>
-                <input name="upstreamTimeoutMs" type="number" min="1000" />
-              </label>
-              <label class="field">
-                <span data-i18n="settings.streamIdle">Stream idle timeout, ms</span>
-                <input name="streamIdleMs" type="number" min="1000" />
-              </label>
-              <label class="field">
-                <span data-i18n="settings.language">Default panel language</span>
-                <select name="defaultLang">
-                  <option value="en">English</option>
-                  <option value="ru">Русский</option>
-                </select>
-              </label>
+            <header class="panel-head"><div><h2 data-i18n="an.percentiles">Latency percentiles</h2><p id="an-requests">—</p></div></header>
+            <div class="bars" id="an-bars"></div>
+          </article>
+        </div>
+
+        <div class="grid-3">
+          <article class="panel">
+            <header class="panel-head"><h2 data-i18n="an.topModels">Top models</h2></header>
+            <div class="list" id="an-models"></div>
+          </article>
+          <article class="panel">
+            <header class="panel-head"><h2 data-i18n="an.topClients">Top clients</h2></header>
+            <div class="list" id="an-clients"></div>
+          </article>
+          <article class="panel">
+            <header class="panel-head"><h2 data-i18n="an.errors">Failure reasons</h2></header>
+            <div class="list" id="an-errors"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view hidden" id="view-settings">
+        <div class="tabs" id="settings-tabs">
+          <button class="is-active" data-tab="engine" data-i18n="settings.tabEngine">Engine</button>
+          <button data-tab="routing" data-i18n="settings.tabRouting">Routing</button>
+          <button data-tab="network" data-i18n="settings.tabNetwork">Network</button>
+          <button data-tab="security" data-i18n="settings.tabSecurity">Security</button>
+          <button data-tab="data" data-i18n="settings.tabData">Data</button>
+        </div>
+
+        <form id="settings-form">
+          <div class="tab-panel" data-tab="engine">
+            <article class="panel">
+              <header class="panel-head"><h2 data-i18n="settings.engine">Engine</h2></header>
+              <div class="form-grid">
+                <label class="field">
+                  <span data-i18n="settings.policy">Selection policy</span>
+                  <select name="policy">
+                    <option value="smart" data-i18n="settings.policySmart">Smart</option>
+                    <option value="round-robin" data-i18n="settings.policyRoundRobin">Round robin</option>
+                    <option value="random" data-i18n="settings.policyRandom">Random</option>
+                    <option value="weighted" data-i18n="settings.policyWeighted">Weighted</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.retries">Attempts per request</span>
+                  <input name="maxAttempts" type="number" min="1" max="50" />
+                  <small data-i18n="settings.retriesHint">How many keys one request may try.</small>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.deadline">Request deadline, ms</span>
+                  <input name="deadlineMs" type="number" min="1000" />
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.queueWait">Queue wait for a free key, ms</span>
+                  <input name="queueWaitMs" type="number" min="0" />
+                  <small data-i18n="settings.queueWaitHint">How long a request may park.</small>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.cooldown">Cooldown base, ms</span>
+                  <input name="cooldownBaseMs" type="number" min="100" />
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.cooldownMax">Cooldown ceiling, ms</span>
+                  <input name="cooldownMaxMs" type="number" min="1000" />
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.circuit">Circuit breaker threshold</span>
+                  <input name="circuitThreshold" type="number" min="1" max="100" />
+                  <small data-i18n="settings.circuitHint">Failures before a long cooldown.</small>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.circuitCooldown">Circuit cooldown, ms</span>
+                  <input name="circuitCooldownMs" type="number" min="1000" />
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.sample">Sampling window</span>
+                  <input name="sampleSize" type="number" min="1" max="64" />
+                  <small data-i18n="settings.sampleHint">Candidates compared per pick.</small>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.timeout">Upstream timeout, ms</span>
+                  <input name="upstreamTimeoutMs" type="number" min="1000" />
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.streamIdle">Stream idle timeout, ms</span>
+                  <input name="streamIdleMs" type="number" min="1000" />
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.authFails">Disable key after N auth failures</span>
+                  <input name="autoDisableAfterAuthFails" type="number" min="1" max="100" />
+                </label>
+              </div>
+              <div class="panel-actions">
+                <button class="btn btn-primary" type="submit" data-i18n="settings.save">Save settings</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="tab-panel hidden" data-tab="routing">
+            <article class="panel">
+              <header class="panel-head"><h2 data-i18n="settings.routing">Routing</h2></header>
+              <div class="panel-body">
+                <label class="field">
+                  <span data-i18n="settings.routes">Model prefixes</span>
+                  <textarea name="routes" rows="7" spellcheck="false" data-i18n-ph="settings.routesHint"></textarea>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.aliases">Model aliases</span>
+                  <textarea name="aliases" rows="4" spellcheck="false" data-i18n-ph="settings.aliasesHint"></textarea>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.models">Advertised models</span>
+                  <input name="models" spellcheck="false" />
+                  <small data-i18n="settings.modelsHint">Comma separated.</small>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.language">Default panel language</span>
+                  <select name="defaultLang">
+                    <option value="en">English</option>
+                    <option value="ru">Русский</option>
+                  </select>
+                </label>
+              </div>
+              <div class="panel-actions">
+                <button class="btn btn-primary" type="submit" data-i18n="settings.save">Save settings</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="tab-panel hidden" data-tab="network">
+            <article class="panel">
+              <header class="panel-head"><h2 data-i18n="settings.network">Network</h2></header>
+              <div class="panel-body">
+                <label class="check-row">
+                  <input type="checkbox" name="cors" />
+                  <span>
+                    <b data-i18n="settings.cors">Allow browser clients (CORS)</b>
+                    <small data-i18n="settings.corsHint">Adds Access-Control headers to /v1.</small>
+                  </span>
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.corsOrigin">Allowed origin</span>
+                  <input name="corsOrigin" placeholder="*" spellcheck="false" />
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.webhook">Alert webhook</span>
+                  <input name="webhookUrl" placeholder="https://discord.com/api/webhooks/…" spellcheck="false" />
+                  <small data-i18n="settings.webhookHint">POST JSON on failure events.</small>
+                </label>
+              </div>
+              <div class="panel-actions">
+                <button class="btn btn-primary" type="submit" data-i18n="settings.save">Save settings</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="tab-panel hidden" data-tab="security">
+            <article class="panel">
+              <header class="panel-head"><div><h2 data-i18n="settings.sessions">Active sessions</h2><p data-i18n="settings.sessionsHint">Every browser with a valid cookie.</p></div></header>
+              <div class="list" id="session-list"></div>
+              <div class="panel-actions">
+                <button class="btn btn-danger-ghost" type="button" id="revoke-all" data-i18n="settings.revokeAll">Sign out everywhere</button>
+              </div>
+            </article>
+            <article class="panel" style="margin-top:16px">
+              <header class="panel-head"><h2 data-i18n="settings.security">Security</h2></header>
+              <div class="form-grid form-grid-3">
+                <label class="field">
+                  <span data-i18n="settings.currentPw">Current password</span>
+                  <input name="current" type="password" autocomplete="current-password" />
+                </label>
+                <label class="field">
+                  <span data-i18n="settings.newPw">New password</span>
+                  <input name="next" type="password" autocomplete="new-password" />
+                </label>
+                <div class="field field-action">
+                  <span>&nbsp;</span>
+                  <button class="btn btn-ghost btn-fit" type="button" id="change-password" data-i18n="settings.changePw">Change password</button>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="tab-panel hidden" data-tab="data">
+            <article class="panel">
+              <header class="panel-head"><h2 data-i18n="settings.data">Data</h2></header>
+              <div class="panel-body data-actions">
+                <div>
+                  <b data-i18n="settings.export">Download backup</b>
+                  <small data-i18n="settings.exportHint">Keys, access keys and settings as one JSON file.</small>
+                  <button class="btn" type="button" id="data-export" data-i18n="settings.exportBtn">Download</button>
+                </div>
+                <div>
+                  <b data-i18n="settings.import">Restore from backup</b>
+                  <small data-i18n="settings.importHint">Replaces the current pool with the file contents.</small>
+                  <button class="btn" type="button" id="data-import" data-i18n="settings.importBtn">Choose file</button>
+                </div>
+                <div>
+                  <b data-i18n="settings.reset">Reset statistics</b>
+                  <small data-i18n="settings.resetHint">Clears counters and the request log. Keys stay.</small>
+                  <button class="btn btn-danger-ghost" type="button" id="data-reset" data-i18n="settings.resetBtn">Reset</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </form>
+      </section>
+
+      <!-- DOCS -->
+      <section class="view hidden" id="view-docs">
+        <div class="grid-2">
+          <article class="panel">
+            <header class="panel-head"><h2 data-i18n="docs.quickstart">Quick start</h2></header>
+            <div class="panel-body">
+              <div class="copy-row">
+                <span class="copy-label" data-i18n="docs.baseOpenai">OpenAI base URL</span>
+                <code id="doc-base-openai">http://localhost:8080/v1</code>
+                <button class="btn btn-sm" data-copy="doc-base-openai" data-i18n="docs.copy">Copy</button>
+              </div>
+              <div class="copy-row">
+                <span class="copy-label" data-i18n="docs.baseAnthropic">Anthropic base URL</span>
+                <code id="doc-base-anthropic">http://localhost:8080</code>
+                <button class="btn btn-sm" data-copy="doc-base-anthropic" data-i18n="docs.copy">Copy</button>
+              </div>
+              <div class="copy-row">
+                <span class="copy-label" data-i18n="docs.prometheus">Metrics endpoint</span>
+                <code id="doc-metrics">/metrics</code>
+                <button class="btn btn-sm" data-copy="doc-metrics" data-i18n="docs.copy">Copy</button>
+              </div>
+              <div class="copy-row">
+                <span class="copy-label" data-i18n="docs.openapi">OpenAPI spec</span>
+                <code id="doc-openapi">/openapi.json</code>
+                <button class="btn btn-sm" data-copy="doc-openapi" data-i18n="docs.copy">Copy</button>
+              </div>
             </div>
           </article>
 
           <article class="panel">
-            <header class="panel-head"><h2 data-i18n="settings.routing">Routing</h2></header>
-            <label class="field">
-              <span data-i18n="settings.routes">Model prefixes</span>
-              <textarea name="routes" rows="7" spellcheck="false" data-i18n-ph="settings.routesHint"></textarea>
-            </label>
-            <label class="field">
-              <span data-i18n="settings.aliases">Model aliases</span>
-              <textarea name="aliases" rows="4" spellcheck="false" data-i18n-ph="settings.aliasesHint"></textarea>
-            </label>
-            <label class="field">
-              <span data-i18n="settings.models">Advertised models</span>
-              <input name="models" spellcheck="false" />
-              <small data-i18n="settings.modelsHint">Comma separated.</small>
-            </label>
-            <button class="btn btn-primary" type="submit" data-i18n="settings.save">Save settings</button>
+            <header class="panel-head"><h2 data-i18n="docs.endpoints">Endpoints</h2></header>
+            <div class="table-wrap">
+              <table class="table table-docs">
+                <tbody id="doc-endpoints"></tbody>
+              </table>
+            </div>
           </article>
-        </form>
+        </div>
 
         <article class="panel">
-          <header class="panel-head"><h2 data-i18n="settings.security">Security</h2></header>
-          <form id="password-form" class="form-grid form-grid-3">
-            <label class="field">
-              <span data-i18n="settings.currentPw">Current password</span>
-              <input name="current" type="password" autocomplete="current-password" />
-            </label>
-            <label class="field">
-              <span data-i18n="settings.newPw">New password</span>
-              <input name="next" type="password" autocomplete="new-password" />
-            </label>
-              <div class="field field-action">
-                <span>&nbsp;</span>
-                <button class="btn btn-ghost btn-fit" type="submit" data-i18n="settings.changePw">Change password</button>
+          <header class="panel-head"><h2 data-i18n="docs.examples">Examples</h2></header>
+          <div class="panel-body docs-code">
+            <div class="code-block">
+              <div class="code-head">
+                <span class="mono">curl</span>
+                <button class="btn btn-sm" data-copy="doc-curl" data-i18n="docs.copy">Copy</button>
               </div>
-          </form>
+              <pre id="doc-curl"><code></code></pre>
+            </div>
+            <div class="code-block">
+              <div class="code-head">
+                <span class="mono">python</span>
+                <button class="btn btn-sm" data-copy="doc-python" data-i18n="docs.copy">Copy</button>
+              </div>
+              <pre id="doc-python"><code></code></pre>
+            </div>
+          </div>
         </article>
       </section>
 
@@ -375,6 +684,54 @@
   </main>
 </div>
 
+<!-- key edit modal -->
+<div class="modal hidden" id="key-modal">
+  <form class="modal-card modal-form" id="key-form">
+    <h3 data-i18n="keys.editTitle">Key settings</h3>
+    <p class="muted small" data-i18n="keys.editHint">Leave the key field empty to keep the current secret.</p>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="keys.provider">Provider</span>
+        <select name="provider"><option value="openai">openai</option><option value="anthropic">anthropic</option></select>
+      </label>
+      <label class="field"><span data-i18n="col.label">Label</span><input name="label" spellcheck="false" /></label>
+    </div>
+    <label class="field"><span data-i18n="col.secret">Key</span><input name="key" spellcheck="false" autocomplete="off" /></label>
+    <label class="field"><span data-i18n="keys.baseUrl">Default base URL</span><input name="baseUrl" spellcheck="false" /></label>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="keys.weight">Weight</span><input name="weight" type="number" min="1" max="100" /></label>
+      <label class="field"><span data-i18n="col.rpm">RPM</span><input name="rpm" type="number" min="0" /></label>
+      <label class="field"><span data-i18n="col.tpm">TPM</span><input name="tpm" type="number" min="0" /></label>
+      <label class="field"><span data-i18n="keys.model">Model override</span><input name="model" spellcheck="false" /></label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" type="button" data-close-modal data-i18n="action.cancel">Cancel</button>
+      <button class="btn btn-primary" type="submit" data-i18n="action.save">Save</button>
+    </div>
+  </form>
+</div>
+
+<!-- client edit modal -->
+<div class="modal hidden" id="client-modal">
+  <form class="modal-card modal-form" id="client-form">
+    <h3 data-i18n="access.editTitle">Access key settings</h3>
+    <label class="field"><span data-i18n="access.name">Name</span><input name="name" spellcheck="false" /></label>
+    <div class="form-grid">
+      <label class="field"><span data-i18n="access.rpm">RPM limit</span><input name="rpm" type="number" min="0" /></label>
+      <label class="field"><span data-i18n="access.daily">Daily token budget</span><input name="dailyTokens" type="number" min="0" /></label>
+    </div>
+    <label class="field"><span data-i18n="access.models">Allowed models</span><input name="models" spellcheck="false" /></label>
+    <label class="check-row">
+      <input type="checkbox" name="active" />
+      <span><b data-i18n="status.active">active</b></span>
+    </label>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" type="button" data-close-modal data-i18n="action.cancel">Cancel</button>
+      <button class="btn btn-primary" type="submit" data-i18n="action.save">Save</button>
+    </div>
+  </form>
+</div>
+
+<!-- confirm modal -->
 <div class="modal hidden" id="modal">
   <div class="modal-card">
     <p id="modal-text"></p>

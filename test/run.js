@@ -240,6 +240,36 @@ async function main() {
     const logs = await admin('/admin/api/state');
     check('request log populated', logs.logs.length > 0, `${logs.logs.length} entries`);
 
+    // --- v1.1 API surface
+    const play = await admin('/admin/api/playground', 'POST', { model: 'mock-model', prompt: 'hello', maxTokens: 32 });
+    check('playground answers through the pool', play.ok === true && String(play.text).includes('echo:'), JSON.stringify(play).slice(0, 80));
+
+    const probeAll = await admin('/admin/api/keys/probe-all', 'POST', {});
+    check('probe-all reports results', typeof probeAll.total === 'number' && probeAll.total >= 1, `${probeAll.ok}/${probeAll.total}`);
+
+    const snapshot = await admin('/admin/api/state');
+    const ids = snapshot.keys.slice(0, 2).map((k) => k.id);
+    const bulkResult = await admin('/admin/api/keys/bulk-action', 'POST', { action: 'disable', ids });
+    check('bulk action disables keys', bulkResult.affected === ids.length, JSON.stringify(bulkResult));
+
+    const exportPayload = await (await fetch(`${BASE}/admin/api/export`, { headers: { cookie } })).json();
+    check('export contains keys', Array.isArray(exportPayload.keys) && exportPayload.keys.length > 0, `${exportPayload.keys.length} keys`);
+
+    const imported = await admin('/admin/api/import', 'POST', exportPayload);
+    check('import restores the pool', imported.keys === exportPayload.keys.length, `${imported.keys}`);
+
+    const metricsText = await (await fetch(`${BASE}/metrics`)).text();
+    check('prometheus endpoint', metricsText.includes('hydra_pool_rpm') && metricsText.includes('hydra_requests_total'));
+
+    const spec = await (await fetch(`${BASE}/openapi.json`)).json();
+    check('openapi endpoint', spec.openapi === '3.1.0' && Boolean(spec.paths['/v1/messages']));
+
+    const sessions = await admin('/admin/api/sessions');
+    check('sessions listed', Array.isArray(sessions.sessions) && sessions.sessions.length >= 1);
+
+    const anonModels = await fetch(`${BASE}/v1/models`);
+    check('models endpoint requires auth', anonModels.status === 401);
+
     check('server stderr clean', !/Error|throw/.test(stderr), stderr.slice(0, 200));
   } finally {
     child.kill('SIGTERM');

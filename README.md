@@ -6,7 +6,7 @@
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-4C8DFF?style=flat-square"></a>
   <img alt="node" src="https://img.shields.io/badge/node-%E2%89%A520-3C873A?style=flat-square">
   <img alt="dependencies" src="https://img.shields.io/badge/dependencies-0-38D39F?style=flat-square">
-  <img alt="tests" src="https://img.shields.io/badge/tests-26%20passing-38D39F?style=flat-square">
+  <img alt="tests" src="https://img.shields.io/badge/tests-65%20passing-38D39F?style=flat-square">
   <img alt="i18n" src="https://img.shields.io/badge/panel-EN%20%7C%20RU-8B93A7?style=flat-square">
   <a href="https://github.com/hydradevc/rotation/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/hydradevc/rotation/actions/workflows/ci.yml/badge.svg"></a>
 </p>
@@ -47,15 +47,20 @@ The ceiling becomes the sum of the pool: **100 keys × 60 RPM = 6,000 RPM** on a
 | | |
 |---|---|
 | **Pooled throughput** | Every upstream key contributes its own RPM and TPM. The pool is the limit, not the key. |
-| **Load-aware selection** | Power-of-two choices over sampled candidates; score mixes in-flight requests, weight, RPM/TPM pressure and recent failures. |
+| **Four selection policies** | Smart load-aware sampling, round-robin, random, weighted random — switchable without a restart. |
 | **Rate-limit absorption** | Per-key 60-second windows for requests *and* tokens, reservations before the call, `Retry-After` / `x-ratelimit-reset-*` aware exponential cooldown. |
+| **Queue instead of fail** | When every key is cooling down, a request parks for a configurable window instead of answering `503`. |
+| **Circuit breaker** | A key that keeps failing is parked for a long cooldown and auto-probed back. |
 | **Both API shapes** | Native OpenAI and Anthropic endpoints. Mixed pools work: ask with `/v1/messages`, get served by an OpenAI key — and the other way round. |
 | **Streaming that stays streaming** | Native SSE is piped byte by byte, no buffering, no re-serialisation. Cross-format streams are emitted as proper SSE for the client's format. |
 | **Access keys** | Give each app its own key with its own RPM ceiling, daily token budget and model allow-list. Revoke or rotate without touching the pool. |
+| **Playground** | Send a prompt through the pool from the panel and see which key answered, how fast and with how many tokens. |
+| **Analytics** | P50/P95/P99 latency, error reasons, top models, top clients, traffic by provider. |
+| **Prometheus + OpenAPI** | `GET /metrics` and `GET /openapi.json` out of the box, no plugins. |
+| **Alerts** | POST a JSON webhook when a key is disabled or the pool runs dry. Works with Discord, Slack, n8n. |
+| **Backups** | Export keys, access keys and settings as one JSON file; restore it on another box. |
 | **Zero dependencies** | Pure Node ≥ 20. No build step, no `node_modules`, no container required. |
 | **Panel in two languages** | Full English and Russian UI, dark, keyboard-friendly, live metrics once per second. |
-| **Single-file state** | `data/state.json`, atomic writes. Copy the file to move the whole pool. |
-| **Probing** | Test any key against its upstream from the panel and see status and latency immediately. |
 
 ## Quick start
 
@@ -72,16 +77,37 @@ First start prints the admin password once and creates your first access key:
 │  HYDRA admin password (save it now)         │
 │  xxxxxxxxxxxx                               │
 └─────────────────────────────────────────────┘
-HYDRA rotator listening on http://0.0.0.0:8080
+HYDRA 1.1.0 listening on http://0.0.0.0:8080
   admin panel    http://localhost:8080/admin
   openai base    http://localhost:8080/v1
   anthropic base http://localhost:8080
+  metrics        http://localhost:8080/metrics
   Default access key created:
   hydra_sk_....
 ```
 
 Open `http://localhost:8080/admin`, go to **Key pool**, paste your keys, done.
 No `npm install` — there is nothing to install.
+
+### Docker
+
+```bash
+docker compose up -d
+```
+
+Or without compose:
+
+```bash
+docker build -t hydra .
+docker run -d --name hydra -p 8080:8080 \
+  -e HYDRA_ADMIN_PASSWORD=change-me \
+  -v hydra-data:/data hydra
+```
+
+### systemd
+
+`deploy/hydra.service` is a hardened unit file — drop it into `/etc/systemd/system/`,
+point `WorkingDirectory` at the checkout and `HYDRA_DATA` at a writable directory.
 
 > Runs on Android/Termux as well: `pkg install nodejs`, then `node server.js`.
 
@@ -139,7 +165,11 @@ just point the base URL at HYDRA.
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/keys.png" alt="Key pool"></td>
-    <td width="50%"><img src="docs/screenshots/access.png" alt="Access keys"></td>
+    <td width="50%"><img src="docs/screenshots/playground.png" alt="Playground"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/analytics.png" alt="Analytics"></td>
+    <td><img src="docs/screenshots/access.png" alt="Access keys"></td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/logs.png" alt="Request log"></td>
@@ -148,8 +178,8 @@ just point the base URL at HYDRA.
 </table>
 
 <p align="center">
+  <img src="docs/screenshots/docs.png" alt="API reference" width="49%">
   <img src="docs/screenshots/overview-ru.png" alt="Russian interface" width="49%">
-  <img src="docs/screenshots/mobile.png" alt="Mobile layout" width="24%">
 </p>
 
 ## How a request flows
@@ -157,7 +187,7 @@ just point the base URL at HYDRA.
 ```mermaid
 flowchart LR
     C["client<br/>hydra_sk_..."] --> R{"HYDRA<br/>selector"}
-    R -->|"lowest score<br/>+ free window"| K1["key 01<br/>60 rpm"]
+    R -->|"smart · round-robin<br/>random · weighted"| K1["key 01<br/>60 rpm"]
     R --> K2["key 02<br/>60 rpm"]
     R --> K3["key 48<br/>60 rpm"]
     K1 --> U1["upstream<br/>OpenAI-compatible"]
@@ -170,11 +200,11 @@ Per request, in order:
 
 1. Authenticate the access key, check its RPM window, daily token budget and model allow-list.
 2. Route the model to a provider (`claude*` → Anthropic, `gpt-*`/`o*` → OpenAI) — configurable by prefix.
-3. Pick a key: candidates are filtered by status, cooldown and provider, then a sample of them is
-   scored by `(inflight + 1) / weight × (1 + rpm_pressure + tpm_pressure) + failures`.
+3. Pick a key: candidates are filtered by status, cooldown and provider, then scored by
+   `(inflight + 1) / weight × (1 + rpm_pressure + tpm_pressure) + failures`.
 4. Reserve RPM and estimated tokens on that key, call the upstream.
-5. `429`/`5xx`/auth error → cooldown that key with backoff and retry the next candidate.
-   `4xx` caused by the request itself is returned to the client untouched.
+5. `429`/`5xx`/auth error → cooldown that key with backoff and retry the next candidate. If every key
+   is busy, park the request for `queueWaitMs` instead of failing immediately.
 6. Stream the body straight back, then settle real token usage into the key's window.
 
 ## Importing keys
@@ -195,8 +225,8 @@ Flat lists and JSON arrays also work:
 [{ "label": "main-1", "key": "sk-...", "provider": "openai", "baseUrl": "https://api.openai.com/v1" }]
 ```
 
-Defaults per key: 60 RPM, unlimited TPM, weight 1. Edit both from the panel — a key with a higher
-weight takes proportionally more traffic.
+Defaults per key: 60 RPM, unlimited TPM, weight 1. Edit any key from the panel — weight, limits,
+provider, base URL or the secret itself. Bulk actions (enable, disable, delete) work on selection.
 
 ## Endpoints
 
@@ -206,11 +236,14 @@ weight takes proportionally more traffic.
 | `POST` | `/v1/embeddings` | OpenAI embeddings |
 | `POST` | `/v1/messages` | Anthropic messages, streaming included |
 | `POST` | `/v1/messages/count_tokens` | Anthropic token counting |
-| `GET` | `/v1/models` | Models advertised in settings |
+| `GET` | `/v1/models` | Models advertised in settings (OpenAI and Anthropic shapes) |
 | `GET` | `/healthz` | Liveness with key count and uptime |
+| `GET` | `/metrics` | Prometheus exposition |
+| `GET` | `/openapi.json` | OpenAPI 3.1 spec |
 | `GET` | `/admin` | Admin panel |
 
 Auth: `Authorization: Bearer hydra_sk_...` or `x-api-key: hydra_sk_...`.
+CORS is off by default and can be enabled from **Settings → Network**.
 
 ## Tuning
 
@@ -218,36 +251,48 @@ All of it lives in **Settings** in the panel.
 
 | Setting | Default | What it does |
 |---|---|---|
+| Selection policy | smart | `smart`, `round-robin`, `random` or `weighted` |
 | Attempts per request | 8 | How many different keys one request may try |
 | Request deadline | 120,000 ms | Give up and answer after this long |
+| Queue wait | 5,000 ms | How long a request parks when every key is cooling |
 | Cooldown base | 1,500 ms | First backoff after a `429` |
 | Cooldown ceiling | 60,000 ms | Cap for exponential backoff |
-| Sampling window | 5 | Candidates compared per pick (higher = smoother, slower) |
+| Circuit breaker | 4 failures | Consecutive failures before the long cooldown |
+| Circuit cooldown | 120,000 ms | How long a broken key stays parked |
+| Sampling window | 5 | Candidates compared per pick |
 | Upstream timeout | 180,000 ms | Time allowed for upstream headers |
 | Stream idle timeout | 240,000 ms | Abort a stream that stops producing |
 
 ## Tests
 
 ```bash
-npm test          # 26 checks against a local mock upstream
-npm run test:ui   # drives the real panel in headless Chromium
+npm test          # 35 backend checks against a local mock upstream
+npm run test:ui   # 30 panel checks in headless Chromium
 npm run bench     # 100 keys, 2,000 requests
 ```
 
-What `npm test` covers: bulk import, concurrent fan-out across keys, `429` absorption against a
+Backend coverage: bulk import, concurrent fan-out across keys, `429` absorption against a
 6×5 RPM ceiling, saturation behaviour, SSE streaming, native Anthropic calls, cross-format routing
-both ways, failover from a dead key, token accounting and the request log.
+both ways, failover from a dead key, token accounting, request log.
+
+UI coverage: every view renders without console errors, key editing, bulk actions, probe-all,
+playground round trip, settings persistence, CORS headers, backup/restore, CSV export,
+Prometheus and OpenAPI endpoints, language switching.
 
 ## Project layout
 
 ```
 server.js            http server, static files, routes
 src/store.js         state, persistence, metrics buckets
-src/pool.js          rate windows, scoring, cooldowns
-src/proxy.js         upstream calls, retries, streaming
+src/pool.js          rate windows, policies, circuit breaker
+src/proxy.js         upstream calls, retries, streaming, playground
 src/translate.js     OpenAI ⇄ Anthropic translation
+src/metrics.js       counters, percentiles, Prometheus rendering
+src/alerts.js        webhook notifications
 src/admin.js         sessions, admin API
+src/openapi.js       API description
 public/              panel (vanilla JS, no framework, no build)
+deploy/hydra.service systemd unit
 test/                mock upstream, integration, UI and bench harnesses
 ```
 
@@ -255,8 +300,8 @@ test/                mock upstream, integration, UI and bench harnesses
 
 - Sticky routing by prompt hash for cache-friendly providers
 - Per-model cost weighting in the selector
-- Prometheus `/metrics` endpoint
-- Dockerfile and a one-command compose file
+- Key-level usage charts over time
+- Optional Postgres storage for multi-node deployments
 
 ## License
 
@@ -278,6 +323,8 @@ cd rotation
 node server.js        # зависимостей нет, npm install не нужен
 ```
 
+Или одной командой в Docker: `docker compose up -d`.
+
 При первом запуске в консоль печатается пароль админки и создаётся первый ключ доступа.
 Панель: `http://localhost:8080/admin`. Ключи вставляются пачкой на вкладке **Пул ключей**,
 по строке на ключ: `метка | ключ | адрес | провайдер` — обязателен только ключ.
@@ -287,10 +334,12 @@ node server.js        # зависимостей нет, npm install не нуж
 - OpenAI-совместимые: base URL `http://localhost:8080/v1`, ключ `hydra_sk_...`
 - Anthropic SDK: base URL `http://localhost:8080`, тот же ключ
 
-Что внутри: секундные окна RPM/TPM на каждый ключ, выбор по текущей загрузке,
-переключение на другой ключ при `429`/`5xx`/`401`, честный стриминг без буферизации,
-трансляция форматов в обе стороны, ключи доступа с лимитами, панель на русском и английском.
+Что внутри: секундные окна RPM/TPM на каждый ключ, четыре политики выбора, ожидание
+свободного ключа вместо мгновенной ошибки, предохранитель для сломанных ключей,
+честный стриминг без буферизации, трансляция форматов в обе стороны, ключи доступа
+с лимитами, песочница, аналитика с перцентилями, `GET /metrics` для Prometheus,
+`GET /openapi.json`, вебхуки в Discord/Slack, бэкап и восстановление, панель на русском.
 
-Тесты: `npm test` (26 проверок), `npm run test:ui`, `npm run bench`.
+Тесты: `npm test` (35 проверок), `npm run test:ui` (30 проверок), `npm run bench`.
 
 </details>

@@ -1,0 +1,16 @@
+services:
+  hydra:
+    build: .
+    image: hydra-rotator:latest
+    container_name: hydra
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      HYDRA_ADMIN_PASSWORD: "change-me-before-first-start"
+      HYDRA_DATA: /data
+    volumes:
+      - hydra-data:/data
+
+volumes:
+  hydra-data:
