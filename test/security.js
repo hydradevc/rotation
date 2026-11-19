@@ -183,6 +183,19 @@ async function main() {
     );
     const rpmOk = rpmBurst.filter((r) => r.status === 200).length;
     check('local rpm ceiling is enforced, not bypassed', rpmOk <= 1, `200s: ${rpmOk}/4`);
+
+    await admin(`/admin/api/keys/${limited[0].id}`, 'PATCH', { rpm: 0, tpm: 1 });
+    const tpmBurst = await Promise.all(
+      Array.from({ length: 3 }, () =>
+        fetch(`${BASE}/v1/chat/completions`, {
+          method: 'POST',
+          headers: { authorization: 'Bearer ' + clientKey, 'content-type': 'application/json' },
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: 'tpm test' }] })
+        })
+      )
+    );
+    const tpmOk = tpmBurst.filter((r) => r.status === 200).length;
+    check('local tpm ceiling is enforced', tpmOk === 0, `200s: ${tpmOk}/3`);
     await admin('/admin/api/settings', 'POST', { queueWaitMs: 5000 });
     await admin('/admin/api/keys', 'DELETE');
     await admin('/admin/api/keys/bulk', 'POST', {
