@@ -136,6 +136,71 @@ async function main() {
     const urlKey = await fetch(`${BASE}/v1/models?key=${encodeURIComponent(clientKey)}`);
     check('query-string auth is rejected', urlKey.status === 401);
 
+    // --- metrics exposure
+    const metricsAnon = await fetch(`${BASE}/metrics`);
+    check('metrics are closed by default', metricsAnon.status === 403, String(metricsAnon.status));
+    const metricsAdmin = await fetch(`${BASE}/metrics`, { headers: { cookie } });
+    check('metrics allowed for an admin session', metricsAdmin.status === 200);
+    await admin('/admin/api/settings', 'POST', { metricsPublic: true });
+    check('metrics can be opened explicitly', (await fetch(`${BASE}/metrics`)).status === 200);
+    await admin('/admin/api/settings', 'POST', { metricsPublic: false });
+
+    // --- upstream url policy
+    const httpUpstream = await admin('/admin/api/keys/bulk', 'POST', {
+      text: 'evil | sk-http-evil-000000000001 | http://example.com/v1'
+    });
+    check('plain http upstream to the internet is rejected', httpUpstream.status === 400, JSON.stringify(httpUpstream.data).slice(0, 80));
+    const localUpstream = await admin('/admin/api/keys/bulk', 'POST', {
+      text: `local | sk-local-ok-000000000002 | http://127.0.0.1:${MOCK}/v1`
+    });
+    check('http upstream to localhost stays allowed', localUpstream.status === 200);
+
+    // --- webhook policy
+    const webhookPrivate = await admin('/admin/api/settings', 'POST', { webhookUrl: 'https://127.0.0.1/hook' });
+    check('webhook to a private address is rejected', webhookPrivate.status === 400);
+    const webhookHttp = await admin('/admin/api/settings', 'POST', { webhookUrl: 'http://example.com/hook' });
+    check('webhook over plain http is rejected', webhookHttp.status === 400);
+    const webhookOk = await admin('/admin/api/settings', 'POST', { webhookUrl: 'https://example.com/hook' });
+    check('public https webhook is accepted', webhookOk.status === 200);
+    await admin('/admin/api/settings', 'POST', { webhookUrl: '' });
+
+    // --- local rpm ceiling is not bypassed
+    await admin('/admin/api/keys', 'DELETE');
+    await admin('/admin/api/keys/bulk', 'POST', {
+      text: `lim | sk-limit-test-000000003 | http://127.0.0.1:${MOCK}/v1`
+    });
+    const limited = (await admin('/admin/api/state')).data.keys;
+    await admin(`/admin/api/keys/${limited[0].id}`, 'PATCH', { rpm: 1, tpm: 0 });
+    await admin('/admin/api/settings', 'POST', { queueWaitMs: 0 });
+    const rpmBurst = await Promise.all(
+      Array.from({ length: 4 }, () =>
+        fetch(`${BASE}/v1/chat/completions`, {
+          method: 'POST',
+          headers: { authorization: 'Bearer ' + clientKey, 'content-type': 'application/json' },
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: 'rpm test' }] })
+        })
+      )
+    );
+    const rpmOk = rpmBurst.filter((r) => r.status === 200).length;
+    check('local rpm ceiling is enforced, not bypassed', rpmOk <= 1, `200s: ${rpmOk}/4`);
+    await admin('/admin/api/settings', 'POST', { queueWaitMs: 5000 });
+    await admin('/admin/api/keys', 'DELETE');
+    await admin('/admin/api/keys/bulk', 'POST', {
+      text: `main | sk-main-ok-000000000004 | http://127.0.0.1:${MOCK}/v1`
+    });
+
+    // --- client runtime is released on delete
+    const extra = await admin('/admin/api/clients', 'POST', { name: 'temp-runtime' });
+    await fetch(`${BASE}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + extra.data.client.key, 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: 'runtime' }] })
+    }).catch(() => {});
+    await admin(`/admin/api/clients/${extra.data.client.id}`, 'DELETE');
+    const runtimeAfter = (await admin('/admin/api/state')).data.metrics.runtime;
+    check('deleted clients release their rate window', runtimeAfter.clientsRuntime <= (await admin('/admin/api/state')).data.clients.length,
+      `${runtimeAfter.clientsRuntime} tracked`);
+
     // --- csrf
     const csrf = await fetch(`${BASE}/admin/api/keys/bulk`, {
       method: 'POST',
@@ -212,6 +277,22 @@ async function main() {
     // --- sessions
     const sessions = await admin('/admin/api/sessions');
     check('sessions listed', sessions.data.sessions.length >= 1);
+
+    // --- backup recovery
+    const bakFile = path.join(dataDir, 'state.json.bak');
+    check('backup file exists after writes', fs.existsSync(bakFile));
+    await stop(server.child);
+    fs.writeFileSync(path.join(dataDir, 'state.json'), '{ broken json');
+    server = startServer(dataDir);
+    await waitUp();
+    const recoveredLogin = await fetch(`${BASE}/admin/api/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ password: PASS })
+    });
+    const recoveredCookie = (recoveredLogin.headers.get('set-cookie') || '').split(';')[0];
+    const recovered = await (await fetch(`${BASE}/admin/api/state`, { headers: { cookie: recoveredCookie } })).json();
+    check('a corrupt state.json recovers from the backup', (recovered.keys || []).length > 0, `${(recovered.keys || []).length} keys`);
 
     // --- master key mismatch
     await stop(server.child);

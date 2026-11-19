@@ -605,6 +605,8 @@ function fillSettings() {
   if (origin) origin.value = s.corsOrigin || '*';
   const webhook = form.elements.namedItem('webhookUrl');
   if (webhook) webhook.value = s.webhookUrl || '';
+  const metricsPublic = form.elements.namedItem('metricsPublic');
+  if (metricsPublic) metricsPublic.checked = Boolean(s.metricsPublic);
 }
 
 function renderDocs() {
@@ -1137,6 +1139,7 @@ $('#settings-form').addEventListener('submit', async (e) => {
   payload.cors = form.elements.namedItem('cors').checked;
   payload.corsOrigin = form.elements.namedItem('corsOrigin').value.trim() || '*';
   payload.webhookUrl = form.elements.namedItem('webhookUrl').value.trim();
+  payload.metricsPublic = form.elements.namedItem('metricsPublic').checked;
   try {
     await api('/admin/api/settings', 'POST', payload);
     toast(t('common.saved'));

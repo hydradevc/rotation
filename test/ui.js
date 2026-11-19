@@ -1,7 +1,12 @@
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { startMock } from './mock-upstream.js';
 
-const HYDRA = process.env.HYDRA_URL || 'http://127.0.0.1:8099';
+const PORT = Number(process.env.UI_PORT || 8099);
+const EXTERNAL = process.env.HYDRA_URL;
+const HYDRA = EXTERNAL || `http://127.0.0.1:${PORT}`;
 const PASS = process.env.HYDRA_PASS || 'uitest';
 const CHROME = process.env.CHROME || 'chromium';
 const MOCK_PORT = 9101;
@@ -15,6 +20,30 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
   const mock = await startMock(MOCK_PORT);
+
+  let server = null;
+  let dataDir = null;
+  if (!EXTERNAL) {
+    dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hydra-ui-'));
+    server = spawn(process.execPath, ['server.js'], {
+      cwd: path.resolve(import.meta.dirname, '..'),
+      env: {
+        ...process.env,
+        PORT: String(PORT),
+        HYDRA_DATA: dataDir,
+        HYDRA_ADMIN_PASSWORD: PASS
+      },
+      stdio: 'ignore'
+    });
+    for (let i = 0; i < 100; i++) {
+      try {
+        if (await fetch(`${HYDRA}/healthz`).then((r) => r.ok)) break;
+      } catch {
+        /* not up yet */
+      }
+      await sleep(100);
+    }
+  }
 
   const login = await fetch(`${HYDRA}/admin/api/login`, {
     method: 'POST',
@@ -230,7 +259,7 @@ async function main() {
   check('csv export has header', csv.split('\n')[0].startsWith('time,client,model'));
 
   // prometheus + openapi
-  const metricsText = await (await fetch(HYDRA + '/metrics')).text();
+  const metricsText = await (await fetch(HYDRA + '/metrics', { headers: { cookie: 'hydra_sid=' + token } })).text();
   check('prometheus metrics exposed', metricsText.includes('hydra_requests_total') && metricsText.includes('hydra_pool_rpm'));
   const spec = await (await fetch(HYDRA + '/openapi.json')).json();
   check('openapi spec valid', spec.openapi === '3.1.0' && Boolean(spec.paths['/v1/chat/completions']));
@@ -254,6 +283,11 @@ async function main() {
   ws.close();
   chrome.kill('SIGKILL');
   mock.close();
+  if (server) server.kill('SIGTERM');
+  if (dataDir) {
+    await sleep(300);
+    fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  }
 
   const failed = results.filter((r) => !r).length;
   console.log(`\n${results.length - failed}/${results.length} ui checks passed`);

@@ -46,7 +46,10 @@ async function main() {
     }).then((r) => r.json());
 
   const state = await admin('/admin/api/state');
-  const clientKey = state.clients[0].key;
+  const clientKey = (
+    await admin(`/admin/api/clients/${state.clients[0].id}/reveal`, 'POST', {})
+  ).key;
+  if (!clientKey?.startsWith('hydra_sk_')) throw new Error('could not obtain a client key');
 
   const lines = Array.from(
     { length: KEYS },
@@ -116,6 +119,11 @@ async function main() {
   child.kill('SIGTERM');
   mock.close();
   fs.rmSync(dataDir, { recursive: true, force: true });
+
+  if (ok !== REQUESTS || failed !== 0) {
+    console.error(`bench failed: ${ok}/${REQUESTS} succeeded, ${failed} failed`);
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {

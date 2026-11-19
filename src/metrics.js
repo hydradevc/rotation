@@ -39,8 +39,22 @@ export function noteAbort() {
   meters.aborts += 1;
 }
 
+const MAX_SERIES = 120;
+
+export const runtimeStats = {
+  clientsRuntime: 0,
+  sessions: 0,
+  logEntries: 0,
+  unreadableSecrets: 0
+};
+
 function bump(map, key, n = 1) {
   if (!key) return;
+  if (!map.has(key) && map.size >= MAX_SERIES) {
+    const other = map.get('(other)') || 0;
+    map.set('(other)', other + n);
+    return;
+  }
   map.set(key, (map.get(key) || 0) + n);
 }
 
@@ -101,6 +115,15 @@ export function snapshot() {
     topProviders: top(meters.byProvider),
     topErrors: top(meters.byError),
     statuses: Object.fromEntries(meters.byStatus),
+    cardinality: {
+      models: meters.byModel.size,
+      clients: meters.byClient.size,
+      providers: meters.byProvider.size,
+      errors: meters.byError.size,
+      statuses: meters.byStatus.size,
+      limit: MAX_SERIES
+    },
+    runtime: { ...runtimeStats },
     uptimeSeconds: Math.round((Date.now() - meters.startedAt) / 1000)
   };
 }
@@ -185,6 +208,18 @@ export function prometheus(pool) {
   out.push('# HELP hydra_event_loop_lag_ms Event loop lag in milliseconds');
   out.push('# TYPE hydra_event_loop_lag_ms gauge');
   out.push(`hydra_event_loop_lag_ms ${loopLag.ms}`);
+  out.push('# HELP hydra_process_clients_tracked Client rate windows held in memory');
+  out.push('# TYPE hydra_process_clients_tracked gauge');
+  out.push(`hydra_process_clients_tracked ${runtimeStats.clientsRuntime}`);
+  out.push('# HELP hydra_admin_sessions Active admin sessions');
+  out.push('# TYPE hydra_admin_sessions gauge');
+  out.push(`hydra_admin_sessions ${runtimeStats.sessions}`);
+  out.push('# HELP hydra_log_entries Entries held in the request log ring');
+  out.push('# TYPE hydra_log_entries gauge');
+  out.push(`hydra_log_entries ${runtimeStats.logEntries}`);
+  out.push('# HELP hydra_unreadable_secrets Secrets that cannot be decrypted');
+  out.push('# TYPE hydra_unreadable_secrets gauge');
+  out.push(`hydra_unreadable_secrets ${runtimeStats.unreadableSecrets}`);
   out.push('# HELP hydra_key_cooldown_ms Milliseconds until a key leaves cooldown');
   out.push('# TYPE hydra_key_cooldown_ms gauge');
   for (const key of pool.keys) {

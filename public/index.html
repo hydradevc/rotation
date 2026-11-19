@@ -84,7 +84,7 @@
 
     <div class="sidebar-foot">
       <div class="engine-line"><span class="dot dot-live"></span><span data-i18n="brand.status">engine online</span></div>
-      <div class="muted small">v1.2.0 · <span id="side-keys">0</span> keys</div>
+      <div class="muted small">v1.2.1 · <span id="side-keys">0</span> keys</div>
     </div>
   </aside>
 
@@ -555,6 +555,13 @@
                 <label class="field">
                   <span data-i18n="settings.corsOrigin">Allowed origin</span>
                   <input name="corsOrigin" placeholder="*" spellcheck="false" />
+                </label>
+                <label class="check-row">
+                  <input type="checkbox" name="metricsPublic" />
+                  <span>
+                    <b data-i18n="settings.metricsPublic">Public /metrics</b>
+                    <small data-i18n="settings.metricsPublicHint">Otherwise scrapers need HYDRA_METRICS_TOKEN.</small>
+                  </span>
                 </label>
                 <label class="field">
                   <span data-i18n="settings.webhook">Alert webhook</span>

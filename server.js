@@ -4,7 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { load, flush, state } from './src/store.js';
-import { handleAdmin, ensurePassword, ensureDefaultClient } from './src/admin.js';
+import { handleAdmin, ensurePassword, ensureDefaultClient, isAdminSession } from './src/admin.js';
 import { handleProxy, readBody } from './src/proxy.js';
 import { poolSnapshot } from './src/pool.js';
 import { prometheus } from './src/metrics.js';
@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || '0.0.0.0';
-const VERSION = '1.2.0';
+const VERSION = '1.2.1';
 const MAX_URL = 4096;
 
 const MIME = {
@@ -116,6 +116,18 @@ function applyCors(req, res) {
   if (origin !== '*') res.setHeader('vary', 'origin');
 }
 
+function metricsAllowed(req) {
+  if (state.settings.metricsPublic) return true;
+  const token = process.env.HYDRA_METRICS_TOKEN;
+  if (token) {
+    const header = String(req.headers.authorization || '');
+    const expected = crypto.createHash('sha256').update(`Bearer ${token}`).digest();
+    const actual = crypto.createHash('sha256').update(header).digest();
+    if (crypto.timingSafeEqual(expected, actual)) return true;
+  }
+  return isAdminSession(req);
+}
+
 function writeJson(res, status, payload) {
   const body = Buffer.from(JSON.stringify(payload));
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'content-length': body.length });
@@ -188,18 +200,23 @@ const server = http.createServer(async (req, res) => {
         }
       })();
       const ok = ready && !draining && writable && pool.summary.healthy > 0;
-      writeJson(res, ok ? 200 : 503, {
-        ok,
-        ready: ready && !draining,
-        writable,
-        keys: pool.summary.keys,
-        healthy: pool.summary.healthy,
-        unreadableSecrets: state.meta?.unreadableKeys || 0
-      });
+      const payload = { ok, ready: ready && !draining };
+      if (isAdminSession(req)) {
+        payload.writable = writable;
+        payload.keys = pool.summary.keys;
+        payload.healthy = pool.summary.healthy;
+        payload.unreadableSecrets = state.meta?.unreadableKeys || 0;
+      }
+      writeJson(res, ok ? 200 : 503, payload);
       return;
     }
 
     if (pathname === '/metrics') {
+      if (!metricsAllowed(req)) {
+        res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' });
+        res.end('metrics are protected: set HYDRA_METRICS_TOKEN or enable public metrics in settings');
+        return;
+      }
       const body = prometheus(poolSnapshot());
       res.writeHead(200, { 'content-type': 'text/plain; version=0.0.4; charset=utf-8' });
       res.end(body);
@@ -253,7 +270,8 @@ const server = http.createServer(async (req, res) => {
 
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
-server.requestTimeout = 0;
+server.requestTimeout = Number(process.env.HYDRA_REQUEST_TIMEOUT_MS || 120000);
+server.maxRequestsPerSocket = Number(process.env.HYDRA_MAX_REQUESTS_PER_SOCKET || 1000);
 
 load();
 const generated = ensurePassword((password) => {

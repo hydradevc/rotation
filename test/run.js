@@ -261,7 +261,7 @@ async function main() {
     const imported = await admin('/admin/api/import', 'POST', exportPayload);
     check('import restores the pool', imported.keys === exportPayload.keys.length, `${imported.keys}`);
 
-    const metricsText = await (await fetch(`${BASE}/metrics`)).text();
+    const metricsText = await (await fetch(`${BASE}/metrics`, { headers: { cookie } })).text();
     check('prometheus endpoint', metricsText.includes('hydra_pool_rpm') && metricsText.includes('hydra_requests_total'));
 
     const spec = await (await fetch(`${BASE}/openapi.json`)).json();

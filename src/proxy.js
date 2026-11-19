@@ -49,6 +49,14 @@ function clientWindow(client) {
   return total;
 }
 
+export function dropClientRuntime(id) {
+  clientRuntime.delete(id);
+}
+
+export function clientRuntimeSize() {
+  return clientRuntime.size;
+}
+
 export function clientStats(client) {
   const now = Date.now();
   const sec = Math.floor(now / 1000);

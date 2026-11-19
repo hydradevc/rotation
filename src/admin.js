@@ -12,8 +12,8 @@ import {
   newAccessKey
 } from './store.js';
 import { poolSnapshot, dropRuntime, rt, clearCooldown } from './pool.js';
-import { snapshot as metricsSnapshot, resetMeters } from './metrics.js';
-import { clientStats, quickChat } from './proxy.js';
+import { snapshot as metricsSnapshot, resetMeters, runtimeStats } from './metrics.js';
+import { clientStats, quickChat, dropClientRuntime, clientRuntimeSize } from './proxy.js';
 
 const SESSION_TTL = 12 * 60 * 60 * 1000;
 const sessions = new Map();
@@ -106,6 +106,55 @@ function readJson(body) {
   } catch {
     return null;
   }
+}
+
+export function isAdminSession(req) {
+  return authed(req);
+}
+
+function isPrivateHost(hostname) {
+  const host = String(hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
+  if (!host) return true;
+  if (host === 'localhost' || host === '::1' || host === '0.0.0.0') return true;
+  if (/^127\./.test(host)) return true;
+  if (/^10\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^169\.254\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+  if (/^(fc|fd)[0-9a-f]{2}:/.test(host)) return true;
+  if (/^fe80:/.test(host)) return true;
+  return false;
+}
+
+export function validateBaseUrl(value) {
+  if (!value) return null;
+  let url;
+  try {
+    url = new URL(String(value));
+  } catch {
+    return 'base url is not a valid URL';
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return 'base url must use http or https';
+  if (url.protocol === 'http:' && !isPrivateHost(url.hostname) && process.env.HYDRA_ALLOW_INSECURE_UPSTREAM !== '1') {
+    return `plain http is only allowed for local upstreams (${url.hostname}); use https`;
+  }
+  return null;
+}
+
+export function validateWebhook(value) {
+  if (!value) return null;
+  let url;
+  try {
+    url = new URL(String(value));
+  } catch {
+    return 'webhook url is not a valid URL';
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return 'webhook must use http or https';
+  if (process.env.HYDRA_ALLOW_PRIVATE_WEBHOOK !== '1') {
+    if (url.protocol === 'http:') return 'webhook must use https';
+    if (isPrivateHost(url.hostname)) return 'webhook to private addresses is disabled';
+  }
+  return null;
 }
 
 export function authState(req) {
@@ -246,6 +295,10 @@ async function probeKey(key) {
 }
 
 function publicState(req) {
+  runtimeStats.clientsRuntime = clientRuntimeSize();
+  runtimeStats.sessions = [...sessions.values()].filter((s) => s.expires > Date.now()).length;
+  runtimeStats.logEntries = logRing.length;
+  runtimeStats.unreadableSecrets = state.meta?.unreadableKeys || 0;
   const pool = poolSnapshot();
   const settings = { ...state.settings };
   delete settings.adminPasswordHash;
@@ -396,9 +449,19 @@ export async function handleAdmin(req, res, url, body) {
 
   if (path === '/admin/api/keys/bulk' && method === 'POST') {
     const payload = readJson(body) || {};
+    const defaultError = validateBaseUrl(payload.baseUrl);
+    if (defaultError) {
+      sendJson(res, 400, { error: defaultError });
+      return true;
+    }
     const created = parseBulk(payload.text, { provider: payload.provider, baseUrl: payload.baseUrl });
     if (!created.length) {
       sendJson(res, 400, { error: 'no keys parsed' });
+      return true;
+    }
+    const invalid = created.find((key) => validateBaseUrl(key.baseUrl));
+    if (invalid) {
+      sendJson(res, 400, { error: `${validateBaseUrl(invalid.baseUrl)} (${invalid.label})` });
       return true;
     }
     state.keys.push(...created);
@@ -470,6 +533,11 @@ export async function handleAdmin(req, res, url, body) {
       }
       if (payload.status !== undefined) {
         key.status = payload.status === 'disabled' ? 'disabled' : 'active';
+      }
+      const urlError = validateBaseUrl(key.baseUrl);
+      if (urlError) {
+        sendJson(res, 400, { error: urlError });
+        return true;
       }
       if (payload.key) key.key = String(payload.key);
       if (key.status !== 'disabled') clearCooldown(key);
@@ -546,6 +614,7 @@ export async function handleAdmin(req, res, url, body) {
     }
     if (method === 'DELETE') {
       state.clients = state.clients.filter((c) => c.id !== client.id);
+      dropClientRuntime(client.id);
       save();
       sendJson(res, 200, { ok: true });
       return true;
@@ -645,6 +714,7 @@ export async function handleAdmin(req, res, url, body) {
         ...normalizeClient({ name: c.name, rpm: c.rpm, dailyTokens: c.dailyTokens, models: c.models }),
         key: c.key || newAccessKey()
       }));
+      for (const client of state.clients) dropClientRuntime(client.id);
     }
     if (payload.settings && typeof payload.settings === 'object') {
       const keepHash = state.settings.adminPasswordHash;
@@ -711,7 +781,16 @@ export async function handleAdmin(req, res, url, body) {
     if (Array.isArray(payload.models)) s.models = payload.models.map(String).filter(Boolean);
     if (typeof payload.cors === 'boolean') s.cors = payload.cors;
     if (typeof payload.corsOrigin === 'string') s.corsOrigin = payload.corsOrigin;
-    if (typeof payload.webhookUrl === 'string') s.webhookUrl = payload.webhookUrl.trim();
+    if (typeof payload.webhookUrl === 'string') {
+      const webhook = payload.webhookUrl.trim();
+      const webhookError = validateWebhook(webhook);
+      if (webhookError) {
+        sendJson(res, 400, { error: webhookError });
+        return true;
+      }
+      s.webhookUrl = webhook;
+    }
+    if (typeof payload.metricsPublic === 'boolean') s.metricsPublic = payload.metricsPublic;
     if (Array.isArray(payload.webhookEvents)) s.webhookEvents = payload.webhookEvents.map(String);
     save();
     sendJson(res, 200, { ok: true });

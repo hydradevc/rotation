@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS = {
   circuitThreshold: 4,
   circuitCooldownMs: 120000,
   models: [],
+  metricsPublic: false,
   cors: false,
   corsOrigin: '*',
   webhookUrl: '',
@@ -184,8 +185,25 @@ export function load() {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     initMasterKey(DATA_DIR);
-    if (!fs.existsSync(STATE_FILE)) return false;
-    const raw = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+
+    const backup = STATE_FILE + '.bak';
+    let raw = null;
+    if (fs.existsSync(STATE_FILE)) {
+      try {
+        raw = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+      } catch (err) {
+        console.error('[store] state.json is unreadable:', err.message);
+      }
+    }
+    if (!raw && fs.existsSync(backup)) {
+      try {
+        raw = JSON.parse(fs.readFileSync(backup, 'utf8'));
+        console.error('[store] recovered from state.json.bak');
+      } catch (err) {
+        console.error('[store] backup is unreadable too:', err.message);
+      }
+    }
+    if (!raw) return false;
     state.settings = { ...DEFAULT_SETTINGS, ...(raw.settings || {}) };
     state.settings.modelRoutes = { ...DEFAULT_SETTINGS.modelRoutes, ...(raw.settings?.modelRoutes || {}) };
     state.keys = Array.isArray(raw.keys) ? raw.keys : [];

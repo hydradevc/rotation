@@ -6,7 +6,7 @@
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-4C8DFF?style=flat-square"></a>
   <img alt="node" src="https://img.shields.io/badge/node-%E2%89%A520-3C873A?style=flat-square">
   <img alt="dependencies" src="https://img.shields.io/badge/dependencies-0-38D39F?style=flat-square">
-  <img alt="tests" src="https://img.shields.io/badge/tests-98%20passing-38D39F?style=flat-square">
+  <img alt="tests" src="https://img.shields.io/badge/tests-110%20passing-38D39F?style=flat-square">
   <img alt="i18n" src="https://img.shields.io/badge/panel-EN%20%7C%20RU-8B93A7?style=flat-square">
   <a href="https://github.com/hydradevc/rotation/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/hydradevc/rotation/actions/workflows/ci.yml/badge.svg"></a>
 </p>
@@ -79,7 +79,7 @@ First start prints the admin password once and creates your first access key:
 │  HYDRA admin password (save it now)         │
 │  xxxxxxxxxxxx                               │
 └─────────────────────────────────────────────┘
-HYDRA 1.2.0 listening on http://0.0.0.0:8080
+HYDRA 1.2.1 listening on http://0.0.0.0:8080
   admin panel    http://localhost:8080/admin
   openai base    http://localhost:8080/v1
   anthropic base http://localhost:8080
@@ -241,7 +241,7 @@ provider, base URL or the secret itself. Bulk actions (enable, disable, delete) 
 | `GET` | `/v1/models` | Models advertised in settings (OpenAI and Anthropic shapes) |
 | `GET` | `/healthz` | Liveness |
 | `GET` | `/readyz` | Readiness: pool healthy, state writable |
-| `GET` | `/metrics` | Prometheus exposition |
+| `GET` | `/metrics` | Prometheus exposition (protected unless enabled) |
 | `GET` | `/openapi.json` | OpenAPI 3.1 spec |
 | `GET` | `/admin` | Admin panel |
 
@@ -279,6 +279,9 @@ All of it lives in **Settings** in the panel.
 | Headers | CSP on the panel, `X-Frame-Options: DENY`, `nosniff`, `no-referrer`, COOP/CORP, HSTS when TLS is detected. |
 | Query-string auth | `?key=` is not accepted; only `Authorization: Bearer` and `x-api-key`. |
 | Brute force | Login attempts are limited per IP. |
+| Metrics | `/metrics` requires an admin session or `HYDRA_METRICS_TOKEN`; open it deliberately in Settings → Network. |
+| Upstream URLs | Plain `http://` is accepted only for loopback/private hosts, so API keys never travel unencrypted to the internet. |
+| Webhooks | Public `https://` only by default, redirects disabled — no SSRF into your internal network. |
 
 ## Configuration
 
@@ -291,12 +294,16 @@ All of it lives in **Settings** in the panel.
 | `HYDRA_SECURE_COOKIES` | `auto` | `1`/`0` to force the `Secure` cookie flag |
 | `HYDRA_TRUST_PROXY` | off | Trust `X-Forwarded-For` / `X-Forwarded-Proto` |
 | `HYDRA_ACCESS_LOG` | off | `json` for structured access logs |
+| `HYDRA_METRICS_TOKEN` | none | Bearer token accepted by `/metrics` |
+| `HYDRA_REQUEST_TIMEOUT_MS` | `120000` | Drop slow/incomplete requests |
+| `HYDRA_ALLOW_INSECURE_UPSTREAM` | off | Let `http://` upstreams leave the local network |
+| `HYDRA_ALLOW_PRIVATE_WEBHOOK` | off | Allow webhooks to private addresses |
 
 ## Tests
 
 ```bash
-npm test            # 36 backend + 30 security checks
-npm run test:ui     # 32 panel checks in headless Chromium
+npm test            # 36 backend + 42 security checks
+npm run test:ui     # 32 panel checks, self-hosted server + Chromium
 npm run test:security  # encryption, cookies, CSRF, budgets, aborts
 npm run bench       # 100 keys, 2,000 requests
 ```
@@ -376,6 +383,6 @@ node server.js        # зависимостей нет, npm install не нуж
 с лимитами, песочница, аналитика с перцентилями, `GET /metrics` для Prometheus,
 `GET /openapi.json`, вебхуки в Discord/Slack, бэкап и восстановление, панель на русском.
 
-Тесты: `npm test` (36 бэкенд + 30 безопасность), `npm run test:ui` (32 проверки), `npm run bench`.
+Тесты: `npm test` (36 бэкенд + 42 безопасность), `npm run test:ui` (32 проверки), `npm run bench`.
 
 </details>

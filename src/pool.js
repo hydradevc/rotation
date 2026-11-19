@@ -209,8 +209,8 @@ export function pickKey({ provider = null, nativeFormat = null, exclude = null }
   const pool = eligible({ provider, nativeFormat, exclude, now });
   if (!pool.length) return null;
 
-  const withCapacity = pool.filter((k) => hasCapacity(k, nowSec));
-  const usable = withCapacity.length ? withCapacity : pool;
+  const usable = pool.filter((k) => hasCapacity(k, nowSec));
+  if (!usable.length) return null;
 
   const policy = state.settings.policy || 'smart';
   if (policy === 'round-robin') {
@@ -230,6 +230,7 @@ export function msUntilSlot({ provider = null } = {}) {
   const now = Date.now();
   const nowSec = Math.floor(now / 1000);
   let soonest = Infinity;
+  let blocked = false;
   for (const key of state.keys) {
     if (key.status !== 'active') continue;
     if (provider && key.provider !== provider) continue;
@@ -239,7 +240,9 @@ export function msUntilSlot({ provider = null } = {}) {
       continue;
     }
     if (hasCapacity(key, nowSec)) return 0;
+    blocked = true;
   }
+  if (blocked) soonest = Math.min(soonest, 1000);
   return Number.isFinite(soonest) ? soonest : null;
 }
 
