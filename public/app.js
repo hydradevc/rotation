@@ -428,7 +428,7 @@ function renderAccess() {
           <button class="btn btn-sm" data-client="rotate" data-id="${esc(c.id)}">${esc(t('access.rotate'))}</button>
           <button class="btn btn-sm btn-danger-ghost" data-client="delete" data-id="${esc(c.id)}">${esc(t('action.delete'))}</button>
         </div>
-        <div class="client-key"><span>${esc(c.key)}</span></div>
+        <div class="client-key"><span>${esc(c.masked || '—')}</span></div>
         <div class="client-stats">
           <span class="chip chip-mut">${esc(t('access.rpm'))}: ${c.rpm || t('common.unlimited')}</span>
           <span class="chip chip-mut">${esc(t('access.daily'))}: ${c.dailyTokens ? num(c.dailyTokens) : t('common.unlimited')}</span>

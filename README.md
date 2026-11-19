@@ -6,7 +6,7 @@
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-4C8DFF?style=flat-square"></a>
   <img alt="node" src="https://img.shields.io/badge/node-%E2%89%A520-3C873A?style=flat-square">
   <img alt="dependencies" src="https://img.shields.io/badge/dependencies-0-38D39F?style=flat-square">
-  <img alt="tests" src="https://img.shields.io/badge/tests-96%20passing-38D39F?style=flat-square">
+  <img alt="tests" src="https://img.shields.io/badge/tests-98%20passing-38D39F?style=flat-square">
   <img alt="i18n" src="https://img.shields.io/badge/panel-EN%20%7C%20RU-8B93A7?style=flat-square">
   <a href="https://github.com/hydradevc/rotation/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/hydradevc/rotation/actions/workflows/ci.yml/badge.svg"></a>
 </p>
@@ -296,7 +296,7 @@ All of it lives in **Settings** in the panel.
 
 ```bash
 npm test            # 36 backend + 30 security checks
-npm run test:ui     # 30 panel checks in headless Chromium
+npm run test:ui     # 32 panel checks in headless Chromium
 npm run test:security  # encryption, cookies, CSRF, budgets, aborts
 npm run bench       # 100 keys, 2,000 requests
 ```
@@ -376,6 +376,6 @@ node server.js        # зависимостей нет, npm install не нуж
 с лимитами, песочница, аналитика с перцентилями, `GET /metrics` для Prometheus,
 `GET /openapi.json`, вебхуки в Discord/Slack, бэкап и восстановление, панель на русском.
 
-Тесты: `npm test` (36 бэкенд + 30 безопасность), `npm run test:ui` (30 проверок), `npm run bench`.
+Тесты: `npm test` (36 бэкенд + 30 безопасность), `npm run test:ui` (32 проверки), `npm run bench`.
 
 </details>

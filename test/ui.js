@@ -122,6 +122,16 @@ async function main() {
 
   check('no console errors on navigation', errors.length === 0, errors.slice(0, 3).join(' | '));
 
+  // access keys are masked, copy pulls the secret on demand
+  await evaluate(`document.querySelector('.nav-item[data-view="access"]').click()`);
+  await sleep(500);
+  const masked = await evaluate(`document.querySelector('.client-key span').textContent`);
+  check('access keys are masked in the list', masked.includes('…'), masked);
+  await evaluate(`document.querySelector('button[data-client="copy"]').click()`);
+  await sleep(900);
+  const copyToast = await evaluate(`[...document.querySelectorAll('.toast')].map(t=>t.textContent).join(' | ')`);
+  check('copy reveals the secret on demand', /copied|скопировано/i.test(copyToast), copyToast.slice(0, 60));
+
   // playground
   await evaluate(`document.querySelector('.nav-item[data-view="playground"]').click()`);
   await sleep(300);
