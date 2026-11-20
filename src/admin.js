@@ -780,6 +780,7 @@ export async function handleAdmin(req, res, url, body) {
     }
     if (Array.isArray(payload.models)) s.models = payload.models.map(String).filter(Boolean);
     if (typeof payload.cors === 'boolean') s.cors = payload.cors;
+    if (typeof payload.strictLimits === 'boolean') s.strictLimits = payload.strictLimits;
     if (typeof payload.corsOrigin === 'string') s.corsOrigin = payload.corsOrigin;
     if (typeof payload.webhookUrl === 'string') {
       const webhook = payload.webhookUrl.trim();

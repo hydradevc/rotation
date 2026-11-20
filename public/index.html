@@ -84,7 +84,7 @@
 
     <div class="sidebar-foot">
       <div class="engine-line"><span class="dot dot-live"></span><span data-i18n="brand.status">engine online</span></div>
-      <div class="muted small">v1.2.1 · <span id="side-keys">0</span> keys</div>
+      <div class="muted small">v1.2.2 · <span id="side-keys">0</span> keys</div>
     </div>
   </aside>
 
@@ -502,6 +502,13 @@
                 <label class="field">
                   <span data-i18n="settings.authFails">Disable key after N auth failures</span>
                   <input name="autoDisableAfterAuthFails" type="number" min="1" max="100" />
+                </label>
+                <label class="check-row">
+                  <input type="checkbox" name="strictLimits" />
+                  <span>
+                    <b data-i18n="settings.strictLimits">Strict local limits</b>
+                    <small data-i18n="settings.strictLimitsHint">Refuse traffic above the key RPM/TPM ceilings instead of overflowing after the queue wait.</small>
+                  </span>
                 </label>
               </div>
               <div class="panel-actions">

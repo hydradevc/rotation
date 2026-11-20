@@ -136,6 +136,25 @@ async function main() {
     const urlKey = await fetch(`${BASE}/v1/models?key=${encodeURIComponent(clientKey)}`);
     check('query-string auth is rejected', urlKey.status === 401);
 
+    // --- non-ASCII key labels must not break the response
+    await admin('/admin/api/keys', 'DELETE');
+    await admin('/admin/api/keys/bulk', 'POST', {
+      text: 'ключ-с-кириллицей | sk-unicode-label-00000007 | http://127.0.0.1:' + MOCK + '/v1'
+    });
+    const unicode = await Promise.all(
+      Array.from({ length: 6 }, () =>
+        fetch(`${BASE}/v1/chat/completions`, {
+          method: 'POST',
+          headers: { authorization: 'Bearer ' + clientKey, 'content-type': 'application/json' },
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: 'unicode' }] })
+        })
+      )
+    );
+    const unicodeStatuses = unicode.map((r) => r.status);
+    const unicodeHeader = unicode[0].headers.get('x-hydra-key') || '';
+    check('non-ASCII key label does not break the response', unicodeStatuses.every((s) => s === 200), unicodeStatuses.join(','));
+    check('key label header stays ASCII-safe', /^[\x20-\x7E]*$/.test(unicodeHeader), unicodeHeader);
+
     // --- metrics exposure
     const metricsAnon = await fetch(`${BASE}/metrics`);
     check('metrics are closed by default', metricsAnon.status === 403, String(metricsAnon.status));
@@ -171,7 +190,7 @@ async function main() {
     });
     const limited = (await admin('/admin/api/state')).data.keys;
     await admin(`/admin/api/keys/${limited[0].id}`, 'PATCH', { rpm: 1, tpm: 0 });
-    await admin('/admin/api/settings', 'POST', { queueWaitMs: 0 });
+    await admin('/admin/api/settings', 'POST', { queueWaitMs: 0, strictLimits: true });
     const rpmBurst = await Promise.all(
       Array.from({ length: 4 }, () =>
         fetch(`${BASE}/v1/chat/completions`, {
@@ -196,7 +215,7 @@ async function main() {
     );
     const tpmOk = tpmBurst.filter((r) => r.status === 200).length;
     check('local tpm ceiling is enforced', tpmOk === 0, `200s: ${tpmOk}/3`);
-    await admin('/admin/api/settings', 'POST', { queueWaitMs: 5000 });
+    await admin('/admin/api/settings', 'POST', { queueWaitMs: 5000, strictLimits: false });
     await admin('/admin/api/keys', 'DELETE');
     await admin('/admin/api/keys/bulk', 'POST', {
       text: `main | sk-main-ok-000000000004 | http://127.0.0.1:${MOCK}/v1`

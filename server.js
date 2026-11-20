@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || '0.0.0.0';
-const VERSION = '1.2.1';
+const VERSION = '1.2.2';
 const MAX_URL = 4096;
 
 const MIME = {

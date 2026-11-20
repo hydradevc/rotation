@@ -1,0 +1,29 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='880' height='420' viewBox='0 0 880 420'>
+<rect width='880' height='420' fill='#ffffff'/>
+<text x='440.0' y='30' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='18' font-weight='600' fill='#111'>Overall leaderboard (score out of 100)</text>
+<line x1='70' y1='310.0' x2='850' y2='310.0' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='314.0' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>0.0</text>
+<line x1='70' y1='247.5' x2='850' y2='247.5' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='251.5' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>25.0</text>
+<line x1='70' y1='185.0' x2='850' y2='185.0' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='189.0' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>50.0</text>
+<line x1='70' y1='122.5' x2='850' y2='122.5' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='126.5' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>75.0</text>
+<line x1='70' y1='60.0' x2='850' y2='60.0' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='64.0' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>100.0</text>
+<text x='18' y='185.0' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666' transform='rotate(-90 18 185.0)' text-anchor='middle'>score</text>
+<rect x='90.8' y='93.3' width='124.2' height='216.7' fill='#2f6fed' rx='3'/>
+<text x='152.9' y='88.3' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>86.7</text>
+<text x='200.0' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>hydra
+#1</text>
+<rect x='350.8' y='95.8' width='124.2' height='214.2' fill='#2f6fed' rx='3'/>
+<text x='412.9' y='90.8' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>85.7</text>
+<text x='460.0' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>keymesh
+#2</text>
+<rect x='610.8' y='141.0' width='124.2' height='169.0' fill='#2f6fed' rx='3'/>
+<text x='672.9' y='136.0' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>67.6</text>
+<text x='720.0' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>apikeyrotator
+#3</text>
+<rect x='70' y='376' width='12' height='12' fill='#2f6fed' rx='2'/>
+<text x='88' y='386' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='12' fill='#222'>Total score</text>
+</svg>

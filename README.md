@@ -6,8 +6,9 @@
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-4C8DFF?style=flat-square"></a>
   <img alt="node" src="https://img.shields.io/badge/node-%E2%89%A520-3C873A?style=flat-square">
   <img alt="dependencies" src="https://img.shields.io/badge/dependencies-0-38D39F?style=flat-square">
-  <img alt="tests" src="https://img.shields.io/badge/tests-111%20passing-38D39F?style=flat-square">
+  <img alt="tests" src="https://img.shields.io/badge/tests-116%20passing-38D39F?style=flat-square">
   <img alt="i18n" src="https://img.shields.io/badge/panel-EN%20%7C%20RU-8B93A7?style=flat-square">
+  <a href="bench/FINAL_REPORT.md"><img alt="benchmark" src="https://img.shields.io/badge/KeyRotatorBench-%231%20of%203-4C8DFF?style=flat-square"></a>
   <a href="https://github.com/hydradevc/rotation/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/hydradevc/rotation/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
@@ -79,7 +80,7 @@ First start prints the admin password once and creates your first access key:
 │  HYDRA admin password (save it now)         │
 │  xxxxxxxxxxxx                               │
 └─────────────────────────────────────────────┘
-HYDRA 1.2.1 listening on http://0.0.0.0:8080
+HYDRA 1.2.2 listening on http://0.0.0.0:8080
   admin panel    http://localhost:8080/admin
   openai base    http://localhost:8080/v1
   anthropic base http://localhost:8080
@@ -183,6 +184,51 @@ just point the base URL at HYDRA.
   <img src="docs/screenshots/docs.png" alt="API reference" width="49%">
   <img src="docs/screenshots/overview-ru.png" alt="Russian interface" width="49%">
 </p>
+
+
+## Benchmarks
+
+HYDRA was measured by **KeyRotatorBench**, an external harness that drives three rotators
+through their real control surface against one shared mock upstream — `200/401/403/429/5xx`,
+dropped connections, stalls, per-key RPM and recovery. 107 cases per project across 12
+categories, weighted into a single score.
+
+<p align="center">
+  <img src="docs/bench-leaderboard.svg" alt="KeyRotatorBench overall leaderboard" width="100%">
+</p>
+
+| # | Project | Score | Tier | Pass rate | Security | Rotation |
+|---|---|---|---|---|---|---|
+| **1** | **HYDRA 1.2.1** | **86.68** | Excellent | 92.7% | **100.0** | 81.8 |
+| 2 | Keymesh 1.0.0 | 85.70 | Excellent | 84.6% | 66.7 | 100.0 |
+| 3 | API Key Rotator | 67.59 | Good | 66.0% | 45.5 | 100.0 |
+
+<p align="center">
+  <img src="bench/charts/02_categories.svg" alt="Score by category" width="100%">
+</p>
+
+**Where HYDRA leads:** security (100 vs 66.7 / 45.5), failover (100), configuration (100),
+observability (100), developer experience (100), API compatibility (85.7), rotation (81.8).
+
+**Where it does not:** raw throughput — 356 rps against Keymesh's 408 at concurrency 100 — and
+memory, where V8 heap ramp-up during the soak is counted against the score (28.5). The margin over
+second place is 0.98 points, so read the top of this table as a tie broken by security and
+operability, not as a blowout.
+
+Method, caveats and the full data: [`bench/`](bench) · [final report](bench/reports/FINAL_REPORT.md) ·
+[raw results](bench/RAW_RESULTS.json).
+
+### What the benchmark caught — and what we fixed
+
+The run was done on 1.2.1. Every finding below is fixed in the current tree, with a regression
+test behind it.
+
+| Finding | Before | After |
+|---|---|---|
+| A key label with a non-ASCII character broke `x-hydra-key` on every response (the panel generates such labels itself) | request hangs or 500 | label is percent-encoded into the header and masked labels are ASCII — 6/6 requests answer 200 |
+| Client headers were not forwarded upstream | 0 hits | arbitrary headers reach the provider; hop-by-hop and auth headers are stripped |
+| Random and smart selection drifted 43% and 47% from an even split | 43.3% / 46.7% deviation | 0% / 20–33% deviation |
+| Saturated pool answered `429`, i.e. the rate limit reached the client | 8 of 140 | 0 of 140 — the pool answers `503` with `Retry-After` |
 
 ## How a request flows
 
@@ -302,7 +348,7 @@ All of it lives in **Settings** in the panel.
 ## Tests
 
 ```bash
-npm test            # 38 backend + 43 security checks
+npm test            # 39 backend + 45 security checks
 npm run test:ui     # 32 panel checks, self-hosted server + Chromium
 npm run test:security  # encryption, cookies, CSRF, budgets, aborts
 npm run bench       # 100 keys, 2,000 requests
@@ -336,6 +382,7 @@ src/openapi.js       API description
 src/crypto.js        master key, AES-256-GCM sealing
 public/              panel (vanilla JS, no framework, no build)
 deploy/hydra.service systemd unit
+bench/               external benchmark results, charts and reports
 test/                mock upstream, integration, UI and bench harnesses
 ```
 
@@ -383,6 +430,6 @@ node server.js        # зависимостей нет, npm install не нуж
 с лимитами, песочница, аналитика с перцентилями, `GET /metrics` для Prometheus,
 `GET /openapi.json`, вебхуки в Discord/Slack, бэкап и восстановление, панель на русском.
 
-Тесты: `npm test` (38 бэкенд + 43 безопасность), `npm run test:ui` (32 проверки), `npm run bench`.
+Тесты: `npm test` (39 бэкенд + 45 безопасность), `npm run test:ui` (32 проверки), `npm run bench`.
 
 </details>

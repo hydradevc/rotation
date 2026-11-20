@@ -1,6 +1,6 @@
 {
   "name": "hydra-rotator",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
   "type": "module",
   "description": "HYDRA — high-throughput API key rotator for OpenAI-compatible and Anthropic providers",

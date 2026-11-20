@@ -67,7 +67,8 @@ export function startMock(port = 9101) {
     await new Promise((r) => setTimeout(r, delay));
 
     const prompt = JSON.stringify(body.messages || []).length;
-    const text = `echo:${body.model}:${prompt}`;
+    const tag = req.headers['x-custom-tag'] || '-';
+    const text = `echo:${body.model}:${prompt}:${tag}`;
 
     if (url.pathname === '/v1/messages') {
       const anthropic = {

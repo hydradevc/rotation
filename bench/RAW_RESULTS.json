@@ -1,0 +1,5659 @@
+{
+ "meta": {
+  "projects": {
+   "hydra": {
+    "records": 107
+   },
+   "apikeyrotator": {
+    "records": 98
+   },
+   "keymesh": {
+    "records": 105
+   }
+  },
+  "environment": {}
+ },
+ "records": [
+  {
+   "test_id": "PERF-hydra-rps",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Peak-load requests/second (ok responses)",
+   "expected": "measured",
+   "actual": 356.57,
+   "pass": true,
+   "metrics": {
+    "value": 356.57,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 47.7,
+     "10": 318.99,
+     "50": 356.66,
+     "100": 356.57
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-avg_ms",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Peak-load average latency",
+   "expected": "measured",
+   "actual": 274.66,
+   "pass": true,
+   "metrics": {
+    "value": 274.66,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 20.94,
+     "10": 31.24,
+     "50": 138.71,
+     "100": 274.66
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-p50_ms",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Peak-load P50 latency",
+   "expected": "measured",
+   "actual": 266.62,
+   "pass": true,
+   "metrics": {
+    "value": 266.62,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 21.66,
+     "10": 29.66,
+     "50": 134.39,
+     "100": 266.62
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-p95_ms",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Peak-load P95 latency",
+   "expected": "measured",
+   "actual": 316.92,
+   "pass": true,
+   "metrics": {
+    "value": 316.92,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 24.26,
+     "10": 43.42,
+     "50": 156.48,
+     "100": 316.92
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-p99_ms",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Peak-load P99 latency",
+   "expected": "measured",
+   "actual": 429.69,
+   "pass": true,
+   "metrics": {
+    "value": 429.69,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 32.36,
+     "10": 58.38,
+     "50": 300.3,
+     "100": 429.69
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-cpu_pct",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Peak-load process CPU utilisation",
+   "expected": "measured",
+   "actual": 112.8,
+   "pass": true,
+   "metrics": {
+    "value": 112.8,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 71.2,
+     "10": 125.9,
+     "50": 112.1,
+     "100": 112.8
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-rss_kb",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Peak-load resident memory under load",
+   "expected": "measured",
+   "actual": 159292,
+   "pass": true,
+   "metrics": {
+    "value": 159292,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 104900,
+     "10": 138028,
+     "50": 148324,
+     "100": 159292
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-error_rate",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Peak-load error rate at peak concurrency",
+   "expected": "measured",
+   "actual": 0.0,
+   "pass": true,
+   "metrics": {
+    "value": 0.0,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 0.0,
+     "10": 0.0,
+     "50": 0.0,
+     "100": 0.0
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c1-rps",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 1: rps",
+   "expected": "measured",
+   "actual": 47.7,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 47.7
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c1-p95_ms",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 1: p95_ms",
+   "expected": "measured",
+   "actual": 24.26,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 24.26
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c1-cpu_pct",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 1: cpu_pct",
+   "expected": "measured",
+   "actual": 71.2,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 71.2
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c10-rps",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 10: rps",
+   "expected": "measured",
+   "actual": 318.99,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 318.99
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c10-p95_ms",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 10: p95_ms",
+   "expected": "measured",
+   "actual": 43.42,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 43.42
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c10-cpu_pct",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 10: cpu_pct",
+   "expected": "measured",
+   "actual": 125.9,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 125.9
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c50-rps",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 50: rps",
+   "expected": "measured",
+   "actual": 356.66,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 356.66
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c50-p95_ms",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 50: p95_ms",
+   "expected": "measured",
+   "actual": 156.48,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 156.48
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c50-cpu_pct",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 50: cpu_pct",
+   "expected": "measured",
+   "actual": 112.1,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 112.1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c100-rps",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 100: rps",
+   "expected": "measured",
+   "actual": 356.57,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 356.57
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c100-p95_ms",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 100: p95_ms",
+   "expected": "measured",
+   "actual": 316.92,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 316.92
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-sweep-c100-cpu_pct",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Concurrency 100: cpu_pct",
+   "expected": "measured",
+   "actual": 112.8,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 112.8
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-consistency-c1",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Throughput consistency at concurrency 1",
+   "expected": "spread < 15% of median",
+   "actual": "28.3% spread",
+   "pass": false,
+   "metrics": {
+    "spread_rps": 13.5,
+    "median_rps": 47.7
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-consistency-c10",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Throughput consistency at concurrency 10",
+   "expected": "spread < 15% of median",
+   "actual": "26.2% spread",
+   "pass": false,
+   "metrics": {
+    "spread_rps": 83.63,
+    "median_rps": 318.99
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-consistency-c50",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Throughput consistency at concurrency 50",
+   "expected": "spread < 15% of median",
+   "actual": "2.5% spread",
+   "pass": true,
+   "metrics": {
+    "spread_rps": 8.88,
+    "median_rps": 356.66
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-hydra-consistency-c100",
+   "category": "PERF",
+   "project": "hydra",
+   "name": "Throughput consistency at concurrency 100",
+   "expected": "spread < 15% of median",
+   "actual": "1.9% spread",
+   "pass": true,
+   "metrics": {
+    "spread_rps": 6.92,
+    "median_rps": 356.57
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-round-robin-all-keys",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "round-robin: every key is used",
+   "expected": "all 10 keys serve traffic",
+   "actual": "10/10 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00001": 30,
+     "sk-bench-00002": 30,
+     "sk-bench-00003": 30,
+     "sk-bench-00004": 30,
+     "sk-bench-00005": 30,
+     "sk-bench-00006": 30,
+     "sk-bench-00007": 30,
+     "sk-bench-00008": 30,
+     "sk-bench-00009": 30,
+     "sk-bench-00000": 30
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-round-robin-balance",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "round-robin: load balance deviation",
+   "expected": "deviation < 10% (deterministic selection)",
+   "actual": "0.0%",
+   "pass": true,
+   "metrics": {
+    "ideal": 30.0,
+    "deviation_pct": 0.0,
+    "threshold_pct": 10.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-round-robin-no-repeat",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "round-robin: no back-to-back repeats",
+   "expected": "0 immediate repeats",
+   "actual": "0",
+   "pass": true,
+   "metrics": {
+    "repeats": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-random-all-keys",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "random: every key is used",
+   "expected": "all 10 keys serve traffic",
+   "actual": "10/10 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00008": 34,
+     "sk-bench-00005": 25,
+     "sk-bench-00007": 25,
+     "sk-bench-00002": 25,
+     "sk-bench-00009": 43,
+     "sk-bench-00000": 30,
+     "sk-bench-00006": 29,
+     "sk-bench-00001": 30,
+     "sk-bench-00004": 35,
+     "sk-bench-00003": 24
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-random-balance",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "random: load balance deviation",
+   "expected": "deviation < 35% (stochastic selection)",
+   "actual": "43.3%",
+   "pass": false,
+   "metrics": {
+    "ideal": 30.0,
+    "deviation_pct": 43.3,
+    "threshold_pct": 35.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-random-no-repeat",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "random: selection is stochastic",
+   "expected": "n/a - repeats allowed by design",
+   "actual": "36 repeats",
+   "pass": null,
+   "metrics": {
+    "repeats": 36
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-weighted-all-keys",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "weighted: every key is used",
+   "expected": "all 10 keys serve traffic",
+   "actual": "10/10 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00007": 36,
+     "sk-bench-00003": 26,
+     "sk-bench-00002": 36,
+     "sk-bench-00006": 36,
+     "sk-bench-00008": 28,
+     "sk-bench-00004": 35,
+     "sk-bench-00000": 25,
+     "sk-bench-00009": 24,
+     "sk-bench-00005": 21,
+     "sk-bench-00001": 33
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-weighted-balance",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "weighted: load balance deviation",
+   "expected": "deviation < 35% (stochastic selection)",
+   "actual": "30.0%",
+   "pass": true,
+   "metrics": {
+    "ideal": 30.0,
+    "deviation_pct": 30.0,
+    "threshold_pct": 35.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-weighted-no-repeat",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "weighted: selection is stochastic",
+   "expected": "n/a - repeats allowed by design",
+   "actual": "27 repeats",
+   "pass": null,
+   "metrics": {
+    "repeats": 27
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-smart-all-keys",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "smart: every key is used",
+   "expected": "all 10 keys serve traffic",
+   "actual": "10/10 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00000": 36,
+     "sk-bench-00003": 39,
+     "sk-bench-00005": 44,
+     "sk-bench-00002": 30,
+     "sk-bench-00008": 29,
+     "sk-bench-00001": 27,
+     "sk-bench-00007": 29,
+     "sk-bench-00006": 24,
+     "sk-bench-00009": 22,
+     "sk-bench-00004": 20
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-smart-balance",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "smart: load balance deviation",
+   "expected": "deviation < 35% (stochastic selection)",
+   "actual": "46.7%",
+   "pass": false,
+   "metrics": {
+    "ideal": 30.0,
+    "deviation_pct": 46.7,
+    "threshold_pct": 35.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-smart-no-repeat",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "smart: selection is stochastic",
+   "expected": "n/a - repeats allowed by design",
+   "actual": "20 repeats",
+   "pass": null,
+   "metrics": {
+    "repeats": 20
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-concurrent-spread",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "Keys used under 20-way concurrency",
+   "expected": "10 keys",
+   "actual": "10 keys",
+   "pass": true,
+   "metrics": {
+    "keys_used": 10,
+    "requests": 1620,
+    "statuses": {
+     "200": 1620
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-hydra-concurrent-none-dropped",
+   "category": "ROT",
+   "project": "hydra",
+   "name": "No request lost under concurrency",
+   "expected": "0 client errors",
+   "actual": "0.0% errors",
+   "pass": true,
+   "metrics": {
+    "requests": 1620,
+    "ok": 1620,
+    "errors": 0,
+    "statuses": {
+     "200": 1620
+    },
+    "rps": 320.31,
+    "ok_rps": 320.31,
+    "error_rate": 0.0,
+    "avg_ms": 61.7,
+    "p50_ms": 58.74,
+    "p95_ms": 74.46,
+    "p99_ms": 208.95,
+    "max_ms": 217.46,
+    "duration_s": 5.06,
+    "concurrency": 20,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 5060,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-hydra-single-key",
+   "category": "FAIL",
+   "project": "hydra",
+   "name": "One key returns 503: client still served",
+   "expected": "40/40 HTTP 200",
+   "actual": "40/40 ok, statuses={'200': 40}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 40
+    },
+    "ok": 40,
+    "n": 40,
+    "p95_ms": 26.3,
+    "max_ms": 36.2
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-hydra-single-key-quarantine",
+   "category": "FAIL",
+   "project": "hydra",
+   "name": "Failing key is removed from rotation",
+   "expected": "failing key serves <= 3 of the last 30 requests",
+   "actual": "0 hits",
+   "pass": true,
+   "metrics": {
+    "hits": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-hydra-multi-key",
+   "category": "FAIL",
+   "project": "hydra",
+   "name": "Three of ten keys return 503",
+   "expected": ">= 38/40 HTTP 200",
+   "actual": "40/40 ok",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 40
+    },
+    "ok": 40,
+    "n": 40,
+    "p95_ms": 28.6,
+    "max_ms": 32.4
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-hydra-auth-fail",
+   "category": "FAIL",
+   "project": "hydra",
+   "name": "Key returns 401 repeatedly",
+   "expected": "no 401 leaks to client, key gets disabled",
+   "actual": "30/30 ok, {'200': 30}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 30
+    },
+    "ok": 30,
+    "n": 30,
+    "p95_ms": 31.8,
+    "max_ms": 39.5
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-hydra-conn-drop",
+   "category": "FAIL",
+   "project": "hydra",
+   "name": "Key drops the TCP connection",
+   "expected": "client still receives 200",
+   "actual": "20/20 ok, {'200': 20}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 20
+    },
+    "ok": 20,
+    "n": 20,
+    "p95_ms": 32.9,
+    "max_ms": 33.1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-hydra-slow-key",
+   "category": "FAIL",
+   "project": "hydra",
+   "name": "Key stalls 4s before answering",
+   "expected": "client served from another key",
+   "actual": "10/10 ok, p95=34.1ms",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 10
+    },
+    "ok": 10,
+    "n": 10,
+    "p95_ms": 34.1,
+    "max_ms": 34.1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-hydra-total-outage",
+   "category": "FAIL",
+   "project": "hydra",
+   "name": "Every upstream key is down",
+   "expected": "bounded failure (<= 60s for 5 requests), explicit error to client",
+   "actual": "10.72s, statuses={'502': 5}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "502": 5
+    },
+    "ok": 0,
+    "n": 5,
+    "p95_ms": 4617.6,
+    "max_ms": 4617.6
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-hydra-recovery",
+   "category": "FAIL",
+   "project": "hydra",
+   "name": "Pool recovers after a full outage",
+   "expected": "serves 200 again within 120s, no restart",
+   "actual": "recovered after 10.59s",
+   "pass": true,
+   "metrics": {
+    "recovery_s": 10.59
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-hydra-429-informed",
+   "category": "RATE",
+   "project": "hydra",
+   "name": "Rotator is told the ceiling is 12 RPM/key and enforces it",
+   "expected": "0 client-visible 429",
+   "actual": "8 of 140",
+   "pass": false,
+   "metrics": {
+    "requests": 140,
+    "ok": 110,
+    "errors": 0,
+    "statuses": {
+     "200": 110,
+     "429": 8,
+     "503": 22
+    },
+    "rps": 9.2,
+    "ok_rps": 7.23,
+    "error_rate": 0.2143,
+    "avg_ms": 1084.25,
+    "p50_ms": 39.91,
+    "p95_ms": 5023.98,
+    "p99_ms": 5035.63,
+    "max_ms": 5036.27,
+    "duration_s": 15.22,
+    "concurrency": 10,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 15220,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-hydra-limit-respected",
+   "category": "RATE",
+   "project": "hydra",
+   "name": "No key exceeds the configured RPM ceiling",
+   "expected": "all keys <= 12/min",
+   "actual": "over-limit keys: {}",
+   "pass": true,
+   "metrics": {
+    "per_key": {
+     "sk-bench-00008": 12,
+     "sk-bench-00004": 12,
+     "sk-bench-00006": 12,
+     "sk-bench-00005": 12,
+     "sk-bench-00009": 12,
+     "sk-bench-00003": 12,
+     "sk-bench-00002": 12,
+     "sk-bench-00000": 12,
+     "sk-bench-00001": 12,
+     "sk-bench-00007": 12
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-hydra-local-rpm-tracking",
+   "category": "RATE",
+   "project": "hydra",
+   "name": "Rotator tracks RPM per key locally",
+   "expected": "counters exposed",
+   "actual": "hydra_key_rpm present",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-hydra-local-tpm-tracking",
+   "category": "RATE",
+   "project": "hydra",
+   "name": "Rotator tracks TPM per key locally",
+   "expected": "counters exposed",
+   "actual": "hydra_pool_tpm present",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-hydra-cooldown-visibility",
+   "category": "RATE",
+   "project": "hydra",
+   "name": "Cooldown state is observable",
+   "expected": "cooldown timer exposed",
+   "actual": "hydra_key_cooldown_ms present",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-hydra-429-reactive",
+   "category": "RATE",
+   "project": "hydra",
+   "name": "Upstream caps each key at 12 RPM; rotator must adapt",
+   "expected": "<= 5% client-visible 429",
+   "actual": "30 of 2002 (1.5%)",
+   "pass": true,
+   "metrics": {
+    "requests": 2002,
+    "ok": 110,
+    "errors": 0,
+    "statuses": {
+     "200": 110,
+     "429": 30,
+     "503": 1862
+    },
+    "rps": 137.96,
+    "ok_rps": 7.58,
+    "error_rate": 0.9451,
+    "avg_ms": 72.31,
+    "p50_ms": 11.69,
+    "p95_ms": 51.35,
+    "p99_ms": 3050.17,
+    "max_ms": 5124.39,
+    "duration_s": 14.51,
+    "concurrency": 10,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 14510,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-hydra-retry-after",
+   "category": "RATE",
+   "project": "hydra",
+   "name": "Upstream sends Retry-After on 429",
+   "expected": "rotator backs off instead of hammering",
+   "actual": "1 429 of 8284 (0.0%)",
+   "pass": true,
+   "metrics": {
+    "requests": 8284,
+    "ok": 1,
+    "errors": 0,
+    "statuses": {
+     "200": 1,
+     "429": 1,
+     "503": 8282
+    },
+    "rps": 798.83,
+    "ok_rps": 0.1,
+    "error_rate": 0.9999,
+    "avg_ms": 5.39,
+    "p50_ms": 3.78,
+    "p95_ms": 8.3,
+    "p99_ms": 10.78,
+    "max_ms": 5033.31,
+    "duration_s": 10.37,
+    "concurrency": 5,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 10370,
+   "notes": null
+  },
+  {
+   "test_id": "REL-hydra-soak",
+   "category": "REL",
+   "project": "hydra",
+   "name": "30s sustained load at concurrency 20",
+   "expected": "0 errors",
+   "actual": "0.00% errors over 9304 req",
+   "pass": true,
+   "metrics": {
+    "requests": 9304,
+    "ok": 9304,
+    "errors": 0,
+    "statuses": {
+     "200": 9304
+    },
+    "rps": 309.5,
+    "ok_rps": 309.5,
+    "error_rate": 0.0,
+    "avg_ms": 64.5,
+    "p50_ms": 58.91,
+    "p95_ms": 78.76,
+    "p99_ms": 92.41,
+    "max_ms": 1625.09,
+    "duration_s": 30.06,
+    "concurrency": 20,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 30060,
+   "notes": null
+  },
+  {
+   "test_id": "REL-hydra-memory-growth",
+   "category": "REL",
+   "project": "hydra",
+   "name": "Memory stays flat during the soak",
+   "expected": "<= 15% RSS growth",
+   "actual": "55164 kB (62.9%)",
+   "pass": false,
+   "metrics": {
+    "rss_start_kb": 87748,
+    "rss_end_kb": 142912,
+    "growth_kb": 55164
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-hydra-garbage-upstream",
+   "category": "REL",
+   "project": "hydra",
+   "name": "Upstream returns a non-JSON body",
+   "expected": "no crash, response still returned",
+   "actual": "statuses={'200': 10}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 10
+    },
+    "ok": 10,
+    "n": 10,
+    "p95_ms": 26.6,
+    "max_ms": 26.6
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-hydra-survives-garbage",
+   "category": "REL",
+   "project": "hydra",
+   "name": "Process alive after malformed upstream",
+   "expected": "process still running",
+   "actual": "alive=True",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-hydra-bad-request-body",
+   "category": "REL",
+   "project": "hydra",
+   "name": "Client sends malformed JSON",
+   "expected": "4xx, no crash",
+   "actual": "status 400",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-hydra-alive-after-bad-body",
+   "category": "REL",
+   "project": "hydra",
+   "name": "Process alive after malformed client body",
+   "expected": "process still running",
+   "actual": "alive=True",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-hydra-openai-shape",
+   "category": "API",
+   "project": "hydra",
+   "name": "OpenAI-compatible request/response",
+   "expected": "HTTP 200 with an OpenAI-shaped body",
+   "actual": "HTTP 200, shape_ok=True",
+   "pass": true,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-hydra-body-forwarded",
+   "category": "API",
+   "project": "hydra",
+   "name": "Request body reaches the upstream",
+   "expected": "upstream saw 1 request",
+   "actual": "checked via upstream counter",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-hydra-header-forwarding",
+   "category": "API",
+   "project": "hydra",
+   "name": "Custom client headers are forwarded",
+   "expected": "x-custom-tag reaches upstream",
+   "actual": "0 hit(s)",
+   "pass": false,
+   "metrics": {
+    "hits": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-hydra-stream-flag",
+   "category": "API",
+   "project": "hydra",
+   "name": "Streaming flag is preserved end to end",
+   "expected": "upstream sees stream=true",
+   "actual": "1 stream request(s)",
+   "pass": true,
+   "metrics": {
+    "seen": 1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-hydra-error-propagation",
+   "category": "API",
+   "project": "hydra",
+   "name": "Upstream 5xx is surfaced, not hidden",
+   "expected": "5xx to the client",
+   "actual": "HTTP 502",
+   "pass": true,
+   "metrics": {
+    "status": 502
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-hydra-unknown-route",
+   "category": "API",
+   "project": "hydra",
+   "name": "Unknown API route answers cleanly",
+   "expected": "4xx",
+   "actual": "HTTP 401",
+   "pass": true,
+   "metrics": {
+    "status": 401
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-hydra-anthropic-endpoint",
+   "category": "API",
+   "project": "hydra",
+   "name": "Anthropic-style endpoint exists",
+   "expected": "endpoint answers (200 with failover)",
+   "actual": "HTTP 200, 278 bytes",
+   "pass": true,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-unauth-admin-api-state",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Unauthenticated GET /admin/api/state",
+   "expected": "401/403 or no data",
+   "actual": "HTTP 401, 24 bytes",
+   "pass": true,
+   "metrics": {
+    "status": 401,
+    "bytes": 24
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-unauth-admin-api-logs",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Unauthenticated GET /admin/api/logs",
+   "expected": "401/403 or no data",
+   "actual": "HTTP 401, 24 bytes",
+   "pass": true,
+   "metrics": {
+    "status": 401,
+    "bytes": 24
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-unauth-admin-api-export",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Unauthenticated GET /admin/api/export",
+   "expected": "401/403 or no data",
+   "actual": "HTTP 401, 24 bytes",
+   "pass": true,
+   "metrics": {
+    "status": 401,
+    "bytes": 24
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-key-material-in-admin",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Admin payload contains raw upstream keys",
+   "expected": "keys masked or encrypted",
+   "actual": "0 raw keys visible",
+   "pass": true,
+   "metrics": {
+    "leaked": []
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-at-rest-plaintext",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Upstream keys are not stored in plaintext",
+   "expected": "no plaintext key on disk",
+   "actual": "no plaintext key on disk",
+   "pass": true,
+   "metrics": {
+    "found": false,
+    "detail": "no plaintext key on disk",
+    "file": null
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-logs-leak",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Full upstream keys never appear in logs",
+   "expected": "no full key in log output",
+   "actual": "none found",
+   "pass": true,
+   "metrics": {
+    "leaked": [],
+    "log_bytes": 36834
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-metrics-auth",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Metrics endpoint is access controlled",
+   "expected": "401/403/404 without credentials",
+   "actual": "HTTP 403",
+   "pass": true,
+   "metrics": {
+    "status": 403
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-default-proxy-key",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Documented default proxy key is rejected",
+   "expected": "401/403",
+   "actual": "HTTP 401",
+   "pass": true,
+   "metrics": {
+    "status": 401
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-cors",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "No wildcard CORS on the API",
+   "expected": "no access-control-allow-origin: *",
+   "actual": "acao=None",
+   "pass": true,
+   "metrics": {
+    "acao": null
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-error-message",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Error responses do not leak internals",
+   "expected": "no stack traces or file paths",
+   "actual": "HTTP 400: {\"error\":{\"message\":\"model is required\",\"type\":\"invalid_request_error\",\"code\":400}}",
+   "pass": true,
+   "metrics": {
+    "body": "{\"error\":{\"message\":\"model is required\",\"type\":\"invalid_request_error\",\"code\":400}}"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-security-headers",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Security headers on the HTTP surface",
+   "expected": ">= 2 of nosniff/frame-options/CSP",
+   "actual": "3 present: ['x-content-type-options', 'x-frame-options', 'content-security-policy']",
+   "pass": true,
+   "metrics": {
+    "headers": [
+     "x-content-type-options",
+     "x-frame-options",
+     "content-security-policy"
+    ]
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-dependencies",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Dependency audit",
+   "expected": "0 high/critical in production deps",
+   "actual": "0 production vulnerabilities over 0 deps",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-hydra-header-label-injection",
+   "category": "SEC",
+   "project": "hydra",
+   "name": "Non-ASCII key label does not break responses",
+   "expected": "200",
+   "actual": "HTTP 200: b'{\"id\": \"chatcmpl-bench\", \"object\": \"chat.completion\", \"created\": 1795185010, \"mo'",
+   "pass": true,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-hydra-health",
+   "category": "OBS",
+   "project": "hydra",
+   "name": "Health endpoint answers 200",
+   "expected": "200",
+   "actual": "{'healthz': 200, 'readyz': 200}",
+   "pass": true,
+   "metrics": {
+    "health": {
+     "healthz": 200,
+     "readyz": 200
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-hydra-metrics-accuracy",
+   "category": "OBS",
+   "project": "hydra",
+   "name": "Prometheus counter matches observed traffic",
+   "expected": "145 (+/-2) requests counted",
+   "actual": "146 counted (delta)",
+   "pass": true,
+   "metrics": {
+    "sent": 145,
+    "reported_delta": 146
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-hydra-metrics-format",
+   "category": "OBS",
+   "project": "hydra",
+   "name": "Metrics endpoint speaks Prometheus format",
+   "expected": "text/plain with HELP/TYPE",
+   "actual": "parsed samples present",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-hydra-logging",
+   "category": "OBS",
+   "project": "hydra",
+   "name": "Request-level logging exists",
+   "expected": "log grows with traffic",
+   "actual": "671 log lines on disk",
+   "pass": true,
+   "metrics": {
+    "lines": 671
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-hydra-error-visibility",
+   "category": "OBS",
+   "project": "hydra",
+   "name": "Failures are observable (metrics/logs)",
+   "expected": "error counters or error log lines",
+   "actual": "error_metric=True",
+   "pass": true,
+   "metrics": {
+    "samples": 34
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-hydra-invalid-value",
+   "category": "CFG",
+   "project": "hydra",
+   "name": "Invalid configuration value is rejected",
+   "expected": "process exits non-zero with a message",
+   "actual": "rc=1",
+   "pass": true,
+   "metrics": {
+    "rc": 1,
+    "output": "node:net:2092\n    validatePort(options.port, 'options.port');\n    ^\n\nRangeError [ERR_SOCKET_BAD_PORT]: options.port should be >= 0 and < 65536. Received type number (NaN).\n    at Server.listen (node:n"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-hydra-reload",
+   "category": "CFG",
+   "project": "hydra",
+   "name": "Settings hot-reload without restart",
+   "expected": "policy applied at runtime",
+   "actual": "policy=random",
+   "pass": true,
+   "metrics": {
+    "policy": "random"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-hydra-backup",
+   "category": "CFG",
+   "project": "hydra",
+   "name": "Configuration backup/export",
+   "expected": "export returns keys+settings",
+   "actual": "HTTP 200, keys=10",
+   "pass": true,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-hydra-restore",
+   "category": "CFG",
+   "project": "hydra",
+   "name": "Configuration restore/import endpoint",
+   "expected": "import endpoint exists",
+   "actual": "POST /admin/api/import",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-hydra-persistence",
+   "category": "CFG",
+   "project": "hydra",
+   "name": "Keys survive a restart",
+   "expected": "requests still served after restart",
+   "actual": "43 ok",
+   "pass": true,
+   "metrics": {
+    "requests": 43,
+    "ok": 43,
+    "errors": 0,
+    "statuses": {
+     "200": 43
+    },
+    "rps": 42.18,
+    "ok_rps": 42.18,
+    "error_rate": 0.0,
+    "avg_ms": 23.62,
+    "p50_ms": 20.69,
+    "p95_ms": 29.44,
+    "p99_ms": 117.59,
+    "max_ms": 117.59,
+    "duration_s": 1.02,
+    "concurrency": 1,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 1020,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-hydra-boot-10",
+   "category": "SCALE",
+   "project": "hydra",
+   "name": "Boot with 10 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "883 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 883.3,
+    "rss_kb": 57232,
+    "rps": 164.72,
+    "p95_ms": 152.2,
+    "errors": 0.0,
+    "requests": 836
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-hydra-rps-10",
+   "category": "SCALE",
+   "project": "hydra",
+   "name": "Throughput with 10 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "164.72 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 883.3,
+    "rss_kb": 57232,
+    "rps": 164.72,
+    "p95_ms": 152.2,
+    "errors": 0.0,
+    "requests": 836
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-hydra-rss-10",
+   "category": "MEM",
+   "project": "hydra",
+   "name": "RSS with 10 keys",
+   "expected": "measured",
+   "actual": "57232 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 57232,
+    "keys": 10,
+    "rss_per_key_kb": 5723.2
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-hydra-boot-100",
+   "category": "SCALE",
+   "project": "hydra",
+   "name": "Boot with 100 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "920 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 920.2,
+    "rss_kb": 64972,
+    "rps": 151.92,
+    "p95_ms": 163.17,
+    "errors": 0.0,
+    "requests": 772
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-hydra-rps-100",
+   "category": "SCALE",
+   "project": "hydra",
+   "name": "Throughput with 100 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "151.92 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 920.2,
+    "rss_kb": 64972,
+    "rps": 151.92,
+    "p95_ms": 163.17,
+    "errors": 0.0,
+    "requests": 772
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-hydra-rss-100",
+   "category": "MEM",
+   "project": "hydra",
+   "name": "RSS with 100 keys",
+   "expected": "measured",
+   "actual": "64972 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 64972,
+    "keys": 100,
+    "rss_per_key_kb": 649.7
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-hydra-boot-1000",
+   "category": "SCALE",
+   "project": "hydra",
+   "name": "Boot with 1000 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "1068 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 1068.1,
+    "rss_kb": 71832,
+    "rps": 111.82,
+    "p95_ms": 278.49,
+    "errors": 0.0,
+    "requests": 569
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-hydra-rps-1000",
+   "category": "SCALE",
+   "project": "hydra",
+   "name": "Throughput with 1000 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "111.82 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 1068.1,
+    "rss_kb": 71832,
+    "rps": 111.82,
+    "p95_ms": 278.49,
+    "errors": 0.0,
+    "requests": 569
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-hydra-rss-1000",
+   "category": "MEM",
+   "project": "hydra",
+   "name": "RSS with 1000 keys",
+   "expected": "measured",
+   "actual": "71832 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 71832,
+    "keys": 1000,
+    "rss_per_key_kb": 71.8
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-hydra-repeated-init",
+   "category": "SCALE",
+   "project": "hydra",
+   "name": "Repeated initialisation is stable",
+   "expected": "3 boots, spread < 50% of median",
+   "actual": "boots=[911.0, 876.4, 899.4] med=899ms",
+   "pass": true,
+   "metrics": {
+    "boots_ms": [
+     911.0,
+     876.4,
+     899.4
+    ]
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-hydra-startup-rss",
+   "category": "MEM",
+   "project": "hydra",
+   "name": "Startup RSS",
+   "expected": "measured",
+   "actual": "57112 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 57112
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-hydra-install-one-command",
+   "category": "DX",
+   "project": "hydra",
+   "name": "One-command start without a build step",
+   "expected": "yes",
+   "actual": "documented quick start found",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 388,
+    "readme_sections": 19,
+    "readme_bytes": 16636,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": true,
+    "test_files": 6,
+    "last_commit": "2026-11-19",
+    "commit_count": "6",
+    "loc": 6683
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-hydra-docs-depth",
+   "category": "DX",
+   "project": "hydra",
+   "name": "Documentation covers setup, config and API (>= 15 sections)",
+   "expected": "yes",
+   "actual": "19 markdown headings",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 388,
+    "readme_sections": 19,
+    "readme_bytes": 16636,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": true,
+    "test_files": 6,
+    "last_commit": "2026-11-19",
+    "commit_count": "6",
+    "loc": 6683
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-hydra-docker",
+   "category": "DX",
+   "project": "hydra",
+   "name": "Container deployment shipped",
+   "expected": "yes",
+   "actual": "Dockerfile=True compose=True",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 388,
+    "readme_sections": 19,
+    "readme_bytes": 16636,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": true,
+    "test_files": 6,
+    "last_commit": "2026-11-19",
+    "commit_count": "6",
+    "loc": 6683
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-hydra-api-spec",
+   "category": "DX",
+   "project": "hydra",
+   "name": "Machine-readable API specification",
+   "expected": "yes",
+   "actual": "openapi/swagger file present",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 388,
+    "readme_sections": 19,
+    "readme_bytes": 16636,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": true,
+    "test_files": 6,
+    "last_commit": "2026-11-19",
+    "commit_count": "6",
+    "loc": 6683
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-hydra-tests",
+   "category": "DX",
+   "project": "hydra",
+   "name": "Automated test suite present",
+   "expected": "yes",
+   "actual": "6 test files",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 388,
+    "readme_sections": 19,
+    "readme_bytes": 16636,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": true,
+    "test_files": 6,
+    "last_commit": "2026-11-19",
+    "commit_count": "6",
+    "loc": 6683
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-hydra-maintenance",
+   "category": "DX",
+   "project": "hydra",
+   "name": "Actively maintained (commit within 12 months)",
+   "expected": "yes",
+   "actual": "last commit 2026-11-19",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 388,
+    "readme_sections": 19,
+    "readme_bytes": 16636,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": true,
+    "test_files": 6,
+    "last_commit": "2026-11-19",
+    "commit_count": "6",
+    "loc": 6683
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-hydra-code-size",
+   "category": "DX",
+   "project": "hydra",
+   "name": "Code base size (informational)",
+   "expected": "measured",
+   "actual": "6683 LOC across the repository",
+   "pass": null,
+   "metrics": {
+    "loc": 6683
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-rps",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Peak-load requests/second (ok responses)",
+   "expected": "measured",
+   "actual": 339.96,
+   "pass": true,
+   "metrics": {
+    "value": 339.96,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 66.16,
+     "10": 21.06,
+     "50": 116.22,
+     "100": 339.96
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-avg_ms",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Peak-load average latency",
+   "expected": "measured",
+   "actual": 289.35,
+   "pass": true,
+   "metrics": {
+    "value": 289.35,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 15.1,
+     "10": 468.2,
+     "50": 412.82,
+     "100": 289.35
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-p50_ms",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Peak-load P50 latency",
+   "expected": "measured",
+   "actual": 271.78,
+   "pass": true,
+   "metrics": {
+    "value": 271.78,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 14.39,
+     "10": 397.53,
+     "50": 236.28,
+     "100": 271.78
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-p95_ms",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Peak-load P95 latency",
+   "expected": "measured",
+   "actual": 410.3,
+   "pass": true,
+   "metrics": {
+    "value": 410.3,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 20.67,
+     "10": 1064.01,
+     "50": 1170.51,
+     "100": 410.3
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-p99_ms",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Peak-load P99 latency",
+   "expected": "measured",
+   "actual": 668.18,
+   "pass": true,
+   "metrics": {
+    "value": 668.18,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 25.19,
+     "10": 1170.07,
+     "50": 1464.37,
+     "100": 668.18
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-cpu_pct",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Peak-load process CPU utilisation",
+   "expected": "measured",
+   "actual": 179.7,
+   "pass": true,
+   "metrics": {
+    "value": 179.7,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 38.8,
+     "10": 12.7,
+     "50": 79.2,
+     "100": 179.7
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-rss_kb",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Peak-load resident memory under load",
+   "expected": "measured",
+   "actual": 37904,
+   "pass": true,
+   "metrics": {
+    "value": 37904,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 20040,
+     "10": 25772,
+     "50": 29352,
+     "100": 37904
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-error_rate",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Peak-load error rate at peak concurrency",
+   "expected": "measured",
+   "actual": 0.0,
+   "pass": true,
+   "metrics": {
+    "value": 0.0,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 0.0,
+     "10": 0.0,
+     "50": 0.0,
+     "100": 0.0
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c1-rps",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 1: rps",
+   "expected": "measured",
+   "actual": 66.16,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 66.16
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c1-p95_ms",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 1: p95_ms",
+   "expected": "measured",
+   "actual": 20.67,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 20.67
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c1-cpu_pct",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 1: cpu_pct",
+   "expected": "measured",
+   "actual": 38.8,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 38.8
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c10-rps",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 10: rps",
+   "expected": "measured",
+   "actual": 21.06,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 21.06
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c10-p95_ms",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 10: p95_ms",
+   "expected": "measured",
+   "actual": 1064.01,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 1064.01
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c10-cpu_pct",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 10: cpu_pct",
+   "expected": "measured",
+   "actual": 12.7,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 12.7
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c50-rps",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 50: rps",
+   "expected": "measured",
+   "actual": 116.22,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 116.22
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c50-p95_ms",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 50: p95_ms",
+   "expected": "measured",
+   "actual": 1170.51,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 1170.51
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c50-cpu_pct",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 50: cpu_pct",
+   "expected": "measured",
+   "actual": 79.2,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 79.2
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c100-rps",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 100: rps",
+   "expected": "measured",
+   "actual": 339.96,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 339.96
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c100-p95_ms",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 100: p95_ms",
+   "expected": "measured",
+   "actual": 410.3,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 410.3
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-sweep-c100-cpu_pct",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Concurrency 100: cpu_pct",
+   "expected": "measured",
+   "actual": 179.7,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 179.7
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-consistency-c1",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Throughput consistency at concurrency 1",
+   "expected": "spread < 15% of median",
+   "actual": "4.0% spread",
+   "pass": true,
+   "metrics": {
+    "spread_rps": 2.65,
+    "median_rps": 66.16
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-consistency-c10",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Throughput consistency at concurrency 10",
+   "expected": "spread < 15% of median",
+   "actual": "670.0% spread",
+   "pass": false,
+   "metrics": {
+    "spread_rps": 141.11,
+    "median_rps": 21.06
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-consistency-c50",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Throughput consistency at concurrency 50",
+   "expected": "spread < 15% of median",
+   "actual": "193.6% spread",
+   "pass": false,
+   "metrics": {
+    "spread_rps": 225.05,
+    "median_rps": 116.22
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-apikeyrotator-consistency-c100",
+   "category": "PERF",
+   "project": "apikeyrotator",
+   "name": "Throughput consistency at concurrency 100",
+   "expected": "spread < 15% of median",
+   "actual": "10.7% spread",
+   "pass": true,
+   "metrics": {
+    "spread_rps": 36.52,
+    "median_rps": 339.96
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-apikeyrotator-round_robin-all-keys",
+   "category": "ROT",
+   "project": "apikeyrotator",
+   "name": "round_robin: every key is used",
+   "expected": "all 10 keys serve traffic",
+   "actual": "10/10 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00006": 30,
+     "sk-bench-00007": 30,
+     "sk-bench-00008": 30,
+     "sk-bench-00009": 30,
+     "sk-bench-00000": 30,
+     "sk-bench-00001": 30,
+     "sk-bench-00002": 30,
+     "sk-bench-00003": 30,
+     "sk-bench-00004": 30,
+     "sk-bench-00005": 30
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-apikeyrotator-round_robin-balance",
+   "category": "ROT",
+   "project": "apikeyrotator",
+   "name": "round_robin: load balance deviation",
+   "expected": "deviation < 10% (deterministic selection)",
+   "actual": "0.0%",
+   "pass": true,
+   "metrics": {
+    "ideal": 30.0,
+    "deviation_pct": 0.0,
+    "threshold_pct": 10.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-apikeyrotator-round_robin-no-repeat",
+   "category": "ROT",
+   "project": "apikeyrotator",
+   "name": "round_robin: no back-to-back repeats",
+   "expected": "0 immediate repeats",
+   "actual": "0",
+   "pass": true,
+   "metrics": {
+    "repeats": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-apikeyrotator-concurrent-spread",
+   "category": "ROT",
+   "project": "apikeyrotator",
+   "name": "Keys used under 20-way concurrency",
+   "expected": "10 keys",
+   "actual": "10 keys",
+   "pass": true,
+   "metrics": {
+    "keys_used": 10,
+    "requests": 955,
+    "statuses": {
+     "200": 955
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-apikeyrotator-concurrent-none-dropped",
+   "category": "ROT",
+   "project": "apikeyrotator",
+   "name": "No request lost under concurrency",
+   "expected": "0 client errors",
+   "actual": "0.0% errors",
+   "pass": true,
+   "metrics": {
+    "requests": 955,
+    "ok": 955,
+    "errors": 0,
+    "statuses": {
+     "200": 955
+    },
+    "rps": 188.76,
+    "ok_rps": 188.76,
+    "error_rate": 0.0,
+    "avg_ms": 105.12,
+    "p50_ms": 85.93,
+    "p95_ms": 228.45,
+    "p99_ms": 312.61,
+    "max_ms": 436.8,
+    "duration_s": 5.06,
+    "concurrency": 20,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 5060,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-apikeyrotator-single-key",
+   "category": "FAIL",
+   "project": "apikeyrotator",
+   "name": "One key returns 503: client still served",
+   "expected": "40/40 HTTP 200",
+   "actual": "36/40 ok, statuses={'200': 36, '503': 4}",
+   "pass": false,
+   "metrics": {
+    "statuses": {
+     "200": 36,
+     "503": 4
+    },
+    "ok": 36,
+    "n": 40,
+    "p95_ms": 23.2,
+    "max_ms": 35.7
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-apikeyrotator-single-key-quarantine",
+   "category": "FAIL",
+   "project": "apikeyrotator",
+   "name": "Failing key is removed from rotation",
+   "expected": "failing key serves <= 3 of the last 30 requests",
+   "actual": "4 hits",
+   "pass": true,
+   "metrics": {
+    "hits": 4
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-apikeyrotator-multi-key",
+   "category": "FAIL",
+   "project": "apikeyrotator",
+   "name": "Three of ten keys return 503",
+   "expected": ">= 38/40 HTTP 200",
+   "actual": "28/40 ok",
+   "pass": false,
+   "metrics": {
+    "statuses": {
+     "503": 12,
+     "200": 28
+    },
+    "ok": 28,
+    "n": 40,
+    "p95_ms": 20.3,
+    "max_ms": 22.9
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-apikeyrotator-auth-fail",
+   "category": "FAIL",
+   "project": "apikeyrotator",
+   "name": "Key returns 401 repeatedly",
+   "expected": "no 401 leaks to client, key gets disabled",
+   "actual": "27/30 ok, {'200': 27, '401': 3}",
+   "pass": false,
+   "metrics": {
+    "statuses": {
+     "200": 27,
+     "401": 3
+    },
+    "ok": 27,
+    "n": 30,
+    "p95_ms": 25.7,
+    "max_ms": 26.2
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-apikeyrotator-conn-drop",
+   "category": "FAIL",
+   "project": "apikeyrotator",
+   "name": "Key drops the TCP connection",
+   "expected": "client still receives 200",
+   "actual": "18/20 ok, {'200': 18, '502': 2}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 18,
+     "502": 2
+    },
+    "ok": 18,
+    "n": 20,
+    "p95_ms": 21.1,
+    "max_ms": 30.8
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-apikeyrotator-slow-key",
+   "category": "FAIL",
+   "project": "apikeyrotator",
+   "name": "Key stalls 4s before answering",
+   "expected": "client served from another key",
+   "actual": "9/10 ok, p95=4015.9ms",
+   "pass": false,
+   "metrics": {
+    "statuses": {
+     "200": 9,
+     "502": 1
+    },
+    "ok": 9,
+    "n": 10,
+    "p95_ms": 4015.9,
+    "max_ms": 4015.9
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-apikeyrotator-total-outage",
+   "category": "FAIL",
+   "project": "apikeyrotator",
+   "name": "Every upstream key is down",
+   "expected": "bounded failure (<= 60s for 5 requests), explicit error to client",
+   "actual": "0.11s, statuses={'503': 5}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "503": 5
+    },
+    "ok": 0,
+    "n": 5,
+    "p95_ms": 27.1,
+    "max_ms": 27.1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-apikeyrotator-recovery",
+   "category": "FAIL",
+   "project": "apikeyrotator",
+   "name": "Pool recovers after a full outage",
+   "expected": "serves 200 again within 120s, no restart",
+   "actual": "recovered after 0.11s",
+   "pass": true,
+   "metrics": {
+    "recovery_s": 0.11
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-apikeyrotator-429-informed",
+   "category": "RATE",
+   "project": "apikeyrotator",
+   "name": "Rotator enforces a known RPM ceiling locally",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-apikeyrotator-limit-respected",
+   "category": "RATE",
+   "project": "apikeyrotator",
+   "name": "Local RPM ceiling is respected",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-apikeyrotator-local-rpm-tracking",
+   "category": "RATE",
+   "project": "apikeyrotator",
+   "name": "Rotator tracks RPM per key locally",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-apikeyrotator-local-tpm-tracking",
+   "category": "RATE",
+   "project": "apikeyrotator",
+   "name": "Rotator tracks TPM per key locally",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-apikeyrotator-cooldown-visibility",
+   "category": "RATE",
+   "project": "apikeyrotator",
+   "name": "Cooldown state is observable",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-apikeyrotator-429-reactive",
+   "category": "RATE",
+   "project": "apikeyrotator",
+   "name": "Upstream caps each key at 12 RPM; rotator must adapt",
+   "expected": "<= 5% client-visible 429",
+   "actual": "3958 of 4068 (97.3%)",
+   "pass": false,
+   "metrics": {
+    "requests": 4068,
+    "ok": 110,
+    "errors": 0,
+    "statuses": {
+     "200": 110,
+     "429": 3958
+    },
+    "rps": 338.25,
+    "ok_rps": 9.15,
+    "error_rate": 0.973,
+    "avg_ms": 29.5,
+    "p50_ms": 25.91,
+    "p95_ms": 56.0,
+    "p99_ms": 87.5,
+    "max_ms": 195.19,
+    "duration_s": 12.03,
+    "concurrency": 10,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 12030,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-apikeyrotator-retry-after",
+   "category": "RATE",
+   "project": "apikeyrotator",
+   "name": "Upstream sends Retry-After on 429",
+   "expected": "rotator backs off instead of hammering",
+   "actual": "1795 429 of 1805 (99.4%)",
+   "pass": false,
+   "metrics": {
+    "requests": 1805,
+    "ok": 10,
+    "errors": 0,
+    "statuses": {
+     "200": 10,
+     "429": 1795
+    },
+    "rps": 225.13,
+    "ok_rps": 1.25,
+    "error_rate": 0.9945,
+    "avg_ms": 22.16,
+    "p50_ms": 17.56,
+    "p95_ms": 49.72,
+    "p99_ms": 86.8,
+    "max_ms": 317.74,
+    "duration_s": 8.02,
+    "concurrency": 5,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 8020,
+   "notes": null
+  },
+  {
+   "test_id": "REL-apikeyrotator-soak",
+   "category": "REL",
+   "project": "apikeyrotator",
+   "name": "30s sustained load at concurrency 20",
+   "expected": "0 errors",
+   "actual": "0.00% errors over 11555 req",
+   "pass": true,
+   "metrics": {
+    "requests": 11555,
+    "ok": 11555,
+    "errors": 0,
+    "statuses": {
+     "200": 11555
+    },
+    "rps": 384.71,
+    "ok_rps": 384.71,
+    "error_rate": 0.0,
+    "avg_ms": 51.93,
+    "p50_ms": 48.81,
+    "p95_ms": 78.5,
+    "p99_ms": 107.54,
+    "max_ms": 186.88,
+    "duration_s": 30.04,
+    "concurrency": 20,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 30040,
+   "notes": null
+  },
+  {
+   "test_id": "REL-apikeyrotator-memory-growth",
+   "category": "REL",
+   "project": "apikeyrotator",
+   "name": "Memory stays flat during the soak",
+   "expected": "<= 15% RSS growth",
+   "actual": "796 kB (2.4%)",
+   "pass": true,
+   "metrics": {
+    "rss_start_kb": 33808,
+    "rss_end_kb": 34604,
+    "growth_kb": 796
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-apikeyrotator-garbage-upstream",
+   "category": "REL",
+   "project": "apikeyrotator",
+   "name": "Upstream returns a non-JSON body",
+   "expected": "no crash, response still returned",
+   "actual": "statuses={'200': 10}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 10
+    },
+    "ok": 10,
+    "n": 10,
+    "p95_ms": 27.9,
+    "max_ms": 27.9
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-apikeyrotator-survives-garbage",
+   "category": "REL",
+   "project": "apikeyrotator",
+   "name": "Process alive after malformed upstream",
+   "expected": "process still running",
+   "actual": "alive=True",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-apikeyrotator-bad-request-body",
+   "category": "REL",
+   "project": "apikeyrotator",
+   "name": "Client sends malformed JSON",
+   "expected": "4xx, no crash",
+   "actual": "status 200",
+   "pass": false,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-apikeyrotator-alive-after-bad-body",
+   "category": "REL",
+   "project": "apikeyrotator",
+   "name": "Process alive after malformed client body",
+   "expected": "process still running",
+   "actual": "alive=True",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-apikeyrotator-openai-shape",
+   "category": "API",
+   "project": "apikeyrotator",
+   "name": "OpenAI-compatible request/response",
+   "expected": "HTTP 200 with an OpenAI-shaped body",
+   "actual": "HTTP 200, shape_ok=True",
+   "pass": true,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-apikeyrotator-body-forwarded",
+   "category": "API",
+   "project": "apikeyrotator",
+   "name": "Request body reaches the upstream",
+   "expected": "upstream saw 1 request",
+   "actual": "checked via upstream counter",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-apikeyrotator-header-forwarding",
+   "category": "API",
+   "project": "apikeyrotator",
+   "name": "Custom client headers are forwarded",
+   "expected": "x-custom-tag reaches upstream",
+   "actual": "1 hit(s)",
+   "pass": true,
+   "metrics": {
+    "hits": 1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-apikeyrotator-stream-flag",
+   "category": "API",
+   "project": "apikeyrotator",
+   "name": "Streaming flag is preserved end to end",
+   "expected": "upstream sees stream=true",
+   "actual": "1 stream request(s)",
+   "pass": true,
+   "metrics": {
+    "seen": 1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-apikeyrotator-error-propagation",
+   "category": "API",
+   "project": "apikeyrotator",
+   "name": "Upstream 5xx is surfaced, not hidden",
+   "expected": "5xx to the client",
+   "actual": "HTTP 500",
+   "pass": true,
+   "metrics": {
+    "status": 500
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-apikeyrotator-unknown-route",
+   "category": "API",
+   "project": "apikeyrotator",
+   "name": "Unknown API route answers cleanly",
+   "expected": "4xx",
+   "actual": "HTTP 404",
+   "pass": true,
+   "metrics": {
+    "status": 404
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-apikeyrotator-anthropic-endpoint",
+   "category": "API",
+   "project": "apikeyrotator",
+   "name": "Anthropic-style endpoint exists",
+   "expected": "endpoint answers (200 with failover)",
+   "actual": "HTTP 200, 278 bytes",
+   "pass": true,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-unauth-admin-proxy-configs",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Unauthenticated GET /admin/proxy-configs",
+   "expected": "401/403 or no data",
+   "actual": "HTTP 200, 254 bytes",
+   "pass": false,
+   "metrics": {
+    "status": 200,
+    "bytes": 254
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": "readable without credentials"
+  },
+  {
+   "test_id": "SEC-apikeyrotator-unauth-admin-app-config",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Unauthenticated GET /admin/app-config",
+   "expected": "401/403 or no data",
+   "actual": "HTTP 200, 49 bytes",
+   "pass": true,
+   "metrics": {
+    "status": 200,
+    "bytes": 49
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-unauth-admin-proxy-configs-1-keys",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Unauthenticated GET /admin/proxy-configs/1/keys",
+   "expected": "401/403 or no data",
+   "actual": "HTTP 200, 752 bytes",
+   "pass": false,
+   "metrics": {
+    "status": 200,
+    "bytes": 752
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": "readable without credentials"
+  },
+  {
+   "test_id": "SEC-apikeyrotator-key-material-in-admin",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Admin payload contains raw upstream keys",
+   "expected": "keys masked or encrypted",
+   "actual": "0 raw keys visible",
+   "pass": true,
+   "metrics": {
+    "leaked": []
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-at-rest-plaintext",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Upstream keys are not stored in plaintext",
+   "expected": "no plaintext key on disk",
+   "actual": "plaintext key found on disk",
+   "pass": false,
+   "metrics": {
+    "found": true,
+    "detail": "plaintext key found on disk",
+    "file": "subjects/akr/bench.db"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": "subjects/akr/bench.db"
+  },
+  {
+   "test_id": "SEC-apikeyrotator-logs-leak",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Full upstream keys never appear in logs",
+   "expected": "no full key in log output",
+   "actual": "8 keys found",
+   "pass": false,
+   "metrics": {
+    "leaked": [
+     "sk-bench-00000",
+     "sk-bench-00001"
+    ],
+    "log_bytes": 106665118
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-metrics-auth",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Metrics endpoint is access controlled",
+   "expected": "401/403/404 without credentials",
+   "actual": "HTTP 404",
+   "pass": true,
+   "metrics": {
+    "status": 404
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-default-proxy-key",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Documented default proxy key is rejected",
+   "expected": "401/403",
+   "actual": "HTTP 400",
+   "pass": true,
+   "metrics": {
+    "status": 400
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-cors",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "No wildcard CORS on the API",
+   "expected": "no access-control-allow-origin: *",
+   "actual": "acao=*",
+   "pass": false,
+   "metrics": {
+    "acao": "*"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-error-message",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Error responses do not leak internals",
+   "expected": "no stack traces or file paths",
+   "actual": "HTTP 404: 404 page not found\n",
+   "pass": true,
+   "metrics": {
+    "body": "404 page not found\n"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-security-headers",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Security headers on the HTTP surface",
+   "expected": ">= 2 of nosniff/frame-options/CSP",
+   "actual": "1 present: ['x-content-type-options']",
+   "pass": false,
+   "metrics": {
+    "headers": [
+     "x-content-type-options"
+    ]
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-dependencies",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Dependency audit",
+   "expected": "Go module audit",
+   "actual": "govulncheck not executed (toolchain offline)",
+   "pass": null,
+   "metrics": {
+    "status": "not executed"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-apikeyrotator-header-label-injection",
+   "category": "SEC",
+   "project": "apikeyrotator",
+   "name": "Non-ASCII key label does not break responses",
+   "expected": "not applicable (no key labels exposed as headers)",
+   "actual": "n/a",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-apikeyrotator-health",
+   "category": "OBS",
+   "project": "apikeyrotator",
+   "name": "Health endpoint answers 200",
+   "expected": "200",
+   "actual": "{'/health': 404, '/admin/app-config': 200}",
+   "pass": true,
+   "metrics": {
+    "health": {
+     "/health": 404,
+     "/admin/app-config": 200
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-apikeyrotator-metrics-accuracy",
+   "category": "OBS",
+   "project": "apikeyrotator",
+   "name": "Prometheus counter matches observed traffic",
+   "expected": "not implemented",
+   "actual": "no metrics endpoint",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "missing feature"
+  },
+  {
+   "test_id": "OBS-apikeyrotator-metrics-format",
+   "category": "OBS",
+   "project": "apikeyrotator",
+   "name": "Metrics endpoint speaks Prometheus format",
+   "expected": "not implemented",
+   "actual": "no metrics endpoint",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "missing feature"
+  },
+  {
+   "test_id": "OBS-apikeyrotator-logging",
+   "category": "OBS",
+   "project": "apikeyrotator",
+   "name": "Request-level logging exists",
+   "expected": "log grows with traffic",
+   "actual": "993900 log lines on disk",
+   "pass": true,
+   "metrics": {
+    "lines": 993900
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-apikeyrotator-error-visibility",
+   "category": "OBS",
+   "project": "apikeyrotator",
+   "name": "Failures are observable (metrics/logs)",
+   "expected": "error counters or error log lines",
+   "actual": "error_metric=False",
+   "pass": false,
+   "metrics": {
+    "samples": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-apikeyrotator-invalid-value",
+   "category": "CFG",
+   "project": "apikeyrotator",
+   "name": "Invalid configuration value is rejected",
+   "expected": "process exits non-zero with a message",
+   "actual": "rc=1",
+   "pass": true,
+   "metrics": {
+    "rc": 1,
+    "output": "2026/11/20 17:20:53 No .env file found, using system environment variables\n2026/11/20 17:20:53 logger.go:16: Logging configured successfully.\n2026/11/20 17:20:53 main.go:27: Database Type: sqlite\n2026"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-apikeyrotator-reload",
+   "category": "CFG",
+   "project": "apikeyrotator",
+   "name": "Settings hot-reload without restart",
+   "expected": "not implemented (restart required)",
+   "actual": "no runtime config API",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "restart required"
+  },
+  {
+   "test_id": "CFG-apikeyrotator-backup",
+   "category": "CFG",
+   "project": "apikeyrotator",
+   "name": "Configuration backup/export",
+   "expected": "not implemented",
+   "actual": "no export endpoint",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "missing feature"
+  },
+  {
+   "test_id": "CFG-apikeyrotator-restore",
+   "category": "CFG",
+   "project": "apikeyrotator",
+   "name": "Configuration restore/import endpoint",
+   "expected": "not implemented",
+   "actual": "no import endpoint",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "missing feature"
+  },
+  {
+   "test_id": "CFG-apikeyrotator-persistence",
+   "category": "CFG",
+   "project": "apikeyrotator",
+   "name": "Keys survive a restart",
+   "expected": "requests still served after restart",
+   "actual": "39 ok",
+   "pass": true,
+   "metrics": {
+    "requests": 39,
+    "ok": 39,
+    "errors": 0,
+    "statuses": {
+     "200": 39
+    },
+    "rps": 38.3,
+    "ok_rps": 38.3,
+    "error_rate": 0.0,
+    "avg_ms": 26.01,
+    "p50_ms": 26.37,
+    "p95_ms": 29.64,
+    "p99_ms": 43.87,
+    "max_ms": 43.87,
+    "duration_s": 1.02,
+    "concurrency": 1,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 1020,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-apikeyrotator-boot-10",
+   "category": "SCALE",
+   "project": "apikeyrotator",
+   "name": "Boot with 10 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "376 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 375.7,
+    "rss_kb": 17024,
+    "rps": 237.92,
+    "p95_ms": 233.39,
+    "errors": 0.0,
+    "requests": 1196
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-apikeyrotator-rps-10",
+   "category": "SCALE",
+   "project": "apikeyrotator",
+   "name": "Throughput with 10 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "237.92 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 375.7,
+    "rss_kb": 17024,
+    "rps": 237.92,
+    "p95_ms": 233.39,
+    "errors": 0.0,
+    "requests": 1196
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-apikeyrotator-rss-10",
+   "category": "MEM",
+   "project": "apikeyrotator",
+   "name": "RSS with 10 keys",
+   "expected": "measured",
+   "actual": "17024 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 17024,
+    "keys": 10,
+    "rss_per_key_kb": 1702.4
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-apikeyrotator-boot-100",
+   "category": "SCALE",
+   "project": "apikeyrotator",
+   "name": "Boot with 100 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "2037 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 2037.4,
+    "rss_kb": 18560,
+    "rps": 226.15,
+    "p95_ms": 171.53,
+    "errors": 0.0,
+    "requests": 1142
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-apikeyrotator-rps-100",
+   "category": "SCALE",
+   "project": "apikeyrotator",
+   "name": "Throughput with 100 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "226.15 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 2037.4,
+    "rss_kb": 18560,
+    "rps": 226.15,
+    "p95_ms": 171.53,
+    "errors": 0.0,
+    "requests": 1142
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-apikeyrotator-rss-100",
+   "category": "MEM",
+   "project": "apikeyrotator",
+   "name": "RSS with 100 keys",
+   "expected": "measured",
+   "actual": "18560 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 18560,
+    "keys": 100,
+    "rss_per_key_kb": 185.6
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-apikeyrotator-boot-1000",
+   "category": "SCALE",
+   "project": "apikeyrotator",
+   "name": "Boot with 1000 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "19549 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 19548.7,
+    "rss_kb": 20456,
+    "rps": 172.57,
+    "p95_ms": 183.67,
+    "errors": 0.0,
+    "requests": 875
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-apikeyrotator-rps-1000",
+   "category": "SCALE",
+   "project": "apikeyrotator",
+   "name": "Throughput with 1000 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "172.57 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 19548.7,
+    "rss_kb": 20456,
+    "rps": 172.57,
+    "p95_ms": 183.67,
+    "errors": 0.0,
+    "requests": 875
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-apikeyrotator-rss-1000",
+   "category": "MEM",
+   "project": "apikeyrotator",
+   "name": "RSS with 1000 keys",
+   "expected": "measured",
+   "actual": "20456 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 20456,
+    "keys": 1000,
+    "rss_per_key_kb": 20.5
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-apikeyrotator-repeated-init",
+   "category": "SCALE",
+   "project": "apikeyrotator",
+   "name": "Repeated initialisation is stable",
+   "expected": "3 boots, spread < 50% of median",
+   "actual": "boots=[400.8, 358.6, 434.8] med=401ms",
+   "pass": true,
+   "metrics": {
+    "boots_ms": [
+     400.8,
+     358.6,
+     434.8
+    ]
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-apikeyrotator-startup-rss",
+   "category": "MEM",
+   "project": "apikeyrotator",
+   "name": "Startup RSS",
+   "expected": "measured",
+   "actual": "16512 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 16512
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-apikeyrotator-install-one-command",
+   "category": "DX",
+   "project": "apikeyrotator",
+   "name": "One-command start without a build step",
+   "expected": "yes",
+   "actual": "requires toolchain/build or CLI wiring",
+   "pass": false,
+   "metrics": {
+    "readme_lines": 229,
+    "readme_sections": 27,
+    "readme_bytes": 9058,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": false,
+    "test_files": 0,
+    "last_commit": "2026-01-04",
+    "commit_count": "52",
+    "loc": 5371
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-apikeyrotator-docs-depth",
+   "category": "DX",
+   "project": "apikeyrotator",
+   "name": "Documentation covers setup, config and API (>= 15 sections)",
+   "expected": "yes",
+   "actual": "27 markdown headings",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 229,
+    "readme_sections": 27,
+    "readme_bytes": 9058,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": false,
+    "test_files": 0,
+    "last_commit": "2026-01-04",
+    "commit_count": "52",
+    "loc": 5371
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-apikeyrotator-docker",
+   "category": "DX",
+   "project": "apikeyrotator",
+   "name": "Container deployment shipped",
+   "expected": "yes",
+   "actual": "Dockerfile=True compose=True",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 229,
+    "readme_sections": 27,
+    "readme_bytes": 9058,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": false,
+    "test_files": 0,
+    "last_commit": "2026-01-04",
+    "commit_count": "52",
+    "loc": 5371
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-apikeyrotator-api-spec",
+   "category": "DX",
+   "project": "apikeyrotator",
+   "name": "Machine-readable API specification",
+   "expected": "yes",
+   "actual": "no spec file",
+   "pass": false,
+   "metrics": {
+    "readme_lines": 229,
+    "readme_sections": 27,
+    "readme_bytes": 9058,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": false,
+    "test_files": 0,
+    "last_commit": "2026-01-04",
+    "commit_count": "52",
+    "loc": 5371
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-apikeyrotator-tests",
+   "category": "DX",
+   "project": "apikeyrotator",
+   "name": "Automated test suite present",
+   "expected": "yes",
+   "actual": "0 test files",
+   "pass": false,
+   "metrics": {
+    "readme_lines": 229,
+    "readme_sections": 27,
+    "readme_bytes": 9058,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": false,
+    "test_files": 0,
+    "last_commit": "2026-01-04",
+    "commit_count": "52",
+    "loc": 5371
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-apikeyrotator-maintenance",
+   "category": "DX",
+   "project": "apikeyrotator",
+   "name": "Actively maintained (commit within 12 months)",
+   "expected": "yes",
+   "actual": "last commit 2026-01-04",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 229,
+    "readme_sections": 27,
+    "readme_bytes": 9058,
+    "dockerfile": true,
+    "compose": true,
+    "openapi": false,
+    "test_files": 0,
+    "last_commit": "2026-01-04",
+    "commit_count": "52",
+    "loc": 5371
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-apikeyrotator-code-size",
+   "category": "DX",
+   "project": "apikeyrotator",
+   "name": "Code base size (informational)",
+   "expected": "measured",
+   "actual": "5371 LOC across the repository",
+   "pass": null,
+   "metrics": {
+    "loc": 5371
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-rps",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Peak-load requests/second (ok responses)",
+   "expected": "measured",
+   "actual": 408.01,
+   "pass": true,
+   "metrics": {
+    "value": 408.01,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 45.86,
+     "10": 351.4,
+     "50": 397.06,
+     "100": 408.01
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-avg_ms",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Peak-load average latency",
+   "expected": "measured",
+   "actual": 240.17,
+   "pass": true,
+   "metrics": {
+    "value": 240.17,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 21.78,
+     "10": 28.34,
+     "50": 124.68,
+     "100": 240.17
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-p50_ms",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Peak-load P50 latency",
+   "expected": "measured",
+   "actual": 235.46,
+   "pass": true,
+   "metrics": {
+    "value": 235.46,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 21.54,
+     "10": 26.81,
+     "50": 121.87,
+     "100": 235.46
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-p95_ms",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Peak-load P95 latency",
+   "expected": "measured",
+   "actual": 289.34,
+   "pass": true,
+   "metrics": {
+    "value": 289.34,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 25.53,
+     "10": 38.99,
+     "50": 143.81,
+     "100": 289.34
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-p99_ms",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Peak-load P99 latency",
+   "expected": "measured",
+   "actual": 424.42,
+   "pass": true,
+   "metrics": {
+    "value": 424.42,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 33.56,
+     "10": 52.86,
+     "50": 220.27,
+     "100": 424.42
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-cpu_pct",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Peak-load process CPU utilisation",
+   "expected": "measured",
+   "actual": 121.1,
+   "pass": true,
+   "metrics": {
+    "value": 121.1,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 80.2,
+     "10": 120.7,
+     "50": 113.7,
+     "100": 121.1
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-rss_kb",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Peak-load resident memory under load",
+   "expected": "measured",
+   "actual": 152184,
+   "pass": true,
+   "metrics": {
+    "value": 152184,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 100932,
+     "10": 135056,
+     "50": 145300,
+     "100": 152184
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-error_rate",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Peak-load error rate at peak concurrency",
+   "expected": "measured",
+   "actual": 0.0,
+   "pass": true,
+   "metrics": {
+    "value": 0.0,
+    "at_concurrency": 100,
+    "all_levels": {
+     "1": 0.0,
+     "10": 0.0,
+     "50": 0.0,
+     "100": 0.0
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c1-rps",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 1: rps",
+   "expected": "measured",
+   "actual": 45.86,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 45.86
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c1-p95_ms",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 1: p95_ms",
+   "expected": "measured",
+   "actual": 25.53,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 25.53
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c1-cpu_pct",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 1: cpu_pct",
+   "expected": "measured",
+   "actual": 80.2,
+   "pass": true,
+   "metrics": {
+    "concurrency": 1,
+    "value": 80.2
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c10-rps",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 10: rps",
+   "expected": "measured",
+   "actual": 351.4,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 351.4
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c10-p95_ms",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 10: p95_ms",
+   "expected": "measured",
+   "actual": 38.99,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 38.99
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c10-cpu_pct",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 10: cpu_pct",
+   "expected": "measured",
+   "actual": 120.7,
+   "pass": true,
+   "metrics": {
+    "concurrency": 10,
+    "value": 120.7
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c50-rps",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 50: rps",
+   "expected": "measured",
+   "actual": 397.06,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 397.06
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c50-p95_ms",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 50: p95_ms",
+   "expected": "measured",
+   "actual": 143.81,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 143.81
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c50-cpu_pct",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 50: cpu_pct",
+   "expected": "measured",
+   "actual": 113.7,
+   "pass": true,
+   "metrics": {
+    "concurrency": 50,
+    "value": 113.7
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c100-rps",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 100: rps",
+   "expected": "measured",
+   "actual": 408.01,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 408.01
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c100-p95_ms",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 100: p95_ms",
+   "expected": "measured",
+   "actual": 289.34,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 289.34
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-sweep-c100-cpu_pct",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Concurrency 100: cpu_pct",
+   "expected": "measured",
+   "actual": 121.1,
+   "pass": true,
+   "metrics": {
+    "concurrency": 100,
+    "value": 121.1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-consistency-c1",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Throughput consistency at concurrency 1",
+   "expected": "spread < 15% of median",
+   "actual": "3.6% spread",
+   "pass": true,
+   "metrics": {
+    "spread_rps": 1.63,
+    "median_rps": 45.86
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-consistency-c10",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Throughput consistency at concurrency 10",
+   "expected": "spread < 15% of median",
+   "actual": "30.3% spread",
+   "pass": false,
+   "metrics": {
+    "spread_rps": 106.47,
+    "median_rps": 351.4
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-consistency-c50",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Throughput consistency at concurrency 50",
+   "expected": "spread < 15% of median",
+   "actual": "3.8% spread",
+   "pass": true,
+   "metrics": {
+    "spread_rps": 15.12,
+    "median_rps": 397.06
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "PERF-keymesh-consistency-c100",
+   "category": "PERF",
+   "project": "keymesh",
+   "name": "Throughput consistency at concurrency 100",
+   "expected": "spread < 15% of median",
+   "actual": "1.2% spread",
+   "pass": true,
+   "metrics": {
+    "spread_rps": 5.03,
+    "median_rps": 408.01
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-round-robin-all-keys",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "round-robin: every key is used",
+   "expected": "all 10 keys serve traffic",
+   "actual": "10/10 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00000": 30,
+     "sk-bench-00001": 30,
+     "sk-bench-00002": 30,
+     "sk-bench-00003": 30,
+     "sk-bench-00004": 30,
+     "sk-bench-00005": 30,
+     "sk-bench-00006": 30,
+     "sk-bench-00007": 30,
+     "sk-bench-00008": 30,
+     "sk-bench-00009": 30
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-round-robin-balance",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "round-robin: load balance deviation",
+   "expected": "deviation < 10% (deterministic selection)",
+   "actual": "0.0%",
+   "pass": true,
+   "metrics": {
+    "ideal": 30.0,
+    "deviation_pct": 0.0,
+    "threshold_pct": 10.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-round-robin-no-repeat",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "round-robin: no back-to-back repeats",
+   "expected": "0 immediate repeats",
+   "actual": "0",
+   "pass": true,
+   "metrics": {
+    "repeats": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-weighted-all-keys",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "weighted: every key is used",
+   "expected": "all 10 keys serve traffic",
+   "actual": "10/10 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00005": 28,
+     "sk-bench-00004": 26,
+     "sk-bench-00006": 28,
+     "sk-bench-00009": 24,
+     "sk-bench-00007": 32,
+     "sk-bench-00008": 24,
+     "sk-bench-00003": 30,
+     "sk-bench-00001": 36,
+     "sk-bench-00000": 38,
+     "sk-bench-00002": 34
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-weighted-balance",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "weighted: load balance deviation",
+   "expected": "deviation < 35% (stochastic selection)",
+   "actual": "26.7%",
+   "pass": true,
+   "metrics": {
+    "ideal": 30.0,
+    "deviation_pct": 26.7,
+    "threshold_pct": 35.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-weighted-no-repeat",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "weighted: selection is stochastic",
+   "expected": "n/a - repeats allowed by design",
+   "actual": "28 repeats",
+   "pass": null,
+   "metrics": {
+    "repeats": 28
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-least-used-all-keys",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "least-used: every key is used",
+   "expected": "all 10 keys serve traffic",
+   "actual": "10/10 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00000": 30,
+     "sk-bench-00001": 30,
+     "sk-bench-00002": 30,
+     "sk-bench-00003": 30,
+     "sk-bench-00004": 30,
+     "sk-bench-00005": 30,
+     "sk-bench-00006": 30,
+     "sk-bench-00007": 30,
+     "sk-bench-00008": 30,
+     "sk-bench-00009": 30
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-least-used-balance",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "least-used: load balance deviation",
+   "expected": "deviation < 35% (stochastic selection)",
+   "actual": "0.0%",
+   "pass": true,
+   "metrics": {
+    "ideal": 30.0,
+    "deviation_pct": 0.0,
+    "threshold_pct": 35.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-least-used-no-repeat",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "least-used: selection is stochastic",
+   "expected": "n/a - repeats allowed by design",
+   "actual": "0 repeats",
+   "pass": null,
+   "metrics": {
+    "repeats": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-sequential-all-keys",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "sequential-then-rotate: holds a key until it fails",
+   "expected": "1-2 keys used over 300 requests",
+   "actual": "1 keys used",
+   "pass": true,
+   "metrics": {
+    "distribution": {
+     "sk-bench-00000": 300
+    },
+    "ok": 300
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": "sequential strategy by design"
+  },
+  {
+   "test_id": "ROT-keymesh-sequential-balance",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "sequential-then-rotate: load balance deviation",
+   "expected": "deviation < 10% (deterministic selection)",
+   "actual": "0.0%",
+   "pass": true,
+   "metrics": {
+    "ideal": 300.0,
+    "deviation_pct": 0.0,
+    "threshold_pct": 10.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-sequential-no-repeat",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "sequential-then-rotate: repeats are expected",
+   "expected": "n/a - holds one key by design",
+   "actual": "299 repeats",
+   "pass": null,
+   "metrics": {
+    "repeats": 299
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-concurrent-spread",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "Keys used under 20-way concurrency",
+   "expected": "10 keys",
+   "actual": "10 keys",
+   "pass": true,
+   "metrics": {
+    "keys_used": 10,
+    "requests": 968,
+    "statuses": {
+     "200": 968
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "ROT-keymesh-concurrent-none-dropped",
+   "category": "ROT",
+   "project": "keymesh",
+   "name": "No request lost under concurrency",
+   "expected": "0 client errors",
+   "actual": "0.0% errors",
+   "pass": true,
+   "metrics": {
+    "requests": 968,
+    "ok": 968,
+    "errors": 0,
+    "statuses": {
+     "200": 968
+    },
+    "rps": 190.33,
+    "ok_rps": 190.33,
+    "error_rate": 0.0,
+    "avg_ms": 103.94,
+    "p50_ms": 98.02,
+    "p95_ms": 129.75,
+    "p99_ms": 371.29,
+    "max_ms": 388.88,
+    "duration_s": 5.09,
+    "concurrency": 20,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 5090,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-keymesh-single-key",
+   "category": "FAIL",
+   "project": "keymesh",
+   "name": "One key returns 503: client still served",
+   "expected": "40/40 HTTP 200",
+   "actual": "40/40 ok, statuses={'200': 40}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 40
+    },
+    "ok": 40,
+    "n": 40,
+    "p95_ms": 176.9,
+    "max_ms": 240.8
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-keymesh-single-key-quarantine",
+   "category": "FAIL",
+   "project": "keymesh",
+   "name": "Failing key is removed from rotation",
+   "expected": "failing key serves <= 3 of the last 30 requests",
+   "actual": "0 hits",
+   "pass": true,
+   "metrics": {
+    "hits": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-keymesh-multi-key",
+   "category": "FAIL",
+   "project": "keymesh",
+   "name": "Three of ten keys return 503",
+   "expected": ">= 38/40 HTTP 200",
+   "actual": "40/40 ok",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 40
+    },
+    "ok": 40,
+    "n": 40,
+    "p95_ms": 150.0,
+    "max_ms": 218.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-keymesh-auth-fail",
+   "category": "FAIL",
+   "project": "keymesh",
+   "name": "Key returns 401 repeatedly",
+   "expected": "no 401 leaks to client, key gets disabled",
+   "actual": "30/30 ok, {'200': 30}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 30
+    },
+    "ok": 30,
+    "n": 30,
+    "p95_ms": 32.0,
+    "max_ms": 71.3
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-keymesh-conn-drop",
+   "category": "FAIL",
+   "project": "keymesh",
+   "name": "Key drops the TCP connection",
+   "expected": "client still receives 200",
+   "actual": "20/20 ok, {'200': 20}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 20
+    },
+    "ok": 20,
+    "n": 20,
+    "p95_ms": 35.0,
+    "max_ms": 36.1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-keymesh-slow-key",
+   "category": "FAIL",
+   "project": "keymesh",
+   "name": "Key stalls 4s before answering",
+   "expected": "client served from another key",
+   "actual": "10/10 ok, p95=28.2ms",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "200": 10
+    },
+    "ok": 10,
+    "n": 10,
+    "p95_ms": 28.2,
+    "max_ms": 28.2
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-keymesh-total-outage",
+   "category": "FAIL",
+   "project": "keymesh",
+   "name": "Every upstream key is down",
+   "expected": "bounded failure (<= 60s for 5 requests), explicit error to client",
+   "actual": "14.86s, statuses={'502': 5}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "502": 5
+    },
+    "ok": 0,
+    "n": 5,
+    "p95_ms": 4599.0,
+    "max_ms": 4599.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "FAIL-keymesh-recovery",
+   "category": "FAIL",
+   "project": "keymesh",
+   "name": "Pool recovers after a full outage",
+   "expected": "serves 200 again within 120s, no restart",
+   "actual": "recovered after 12.52s",
+   "pass": true,
+   "metrics": {
+    "recovery_s": 12.52
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-keymesh-429-informed",
+   "category": "RATE",
+   "project": "keymesh",
+   "name": "Rotator enforces a known RPM ceiling locally",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-keymesh-limit-respected",
+   "category": "RATE",
+   "project": "keymesh",
+   "name": "Local RPM ceiling is respected",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-keymesh-local-rpm-tracking",
+   "category": "RATE",
+   "project": "keymesh",
+   "name": "Rotator tracks RPM per key locally",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-keymesh-local-tpm-tracking",
+   "category": "RATE",
+   "project": "keymesh",
+   "name": "Rotator tracks TPM per key locally",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-keymesh-cooldown-visibility",
+   "category": "RATE",
+   "project": "keymesh",
+   "name": "Cooldown state is observable",
+   "expected": "capability present",
+   "actual": "not implemented",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no local rate-limit model"
+  },
+  {
+   "test_id": "RATE-keymesh-429-reactive",
+   "category": "RATE",
+   "project": "keymesh",
+   "name": "Upstream caps each key at 12 RPM; rotator must adapt",
+   "expected": "<= 5% client-visible 429",
+   "actual": "0 of 14400 (0.0%)",
+   "pass": true,
+   "metrics": {
+    "requests": 14400,
+    "ok": 44,
+    "errors": 0,
+    "statuses": {
+     "200": 44,
+     "502": 14356
+    },
+    "rps": 1198.97,
+    "ok_rps": 3.66,
+    "error_rate": 0.9969,
+    "avg_ms": 8.32,
+    "p50_ms": 7.58,
+    "p95_ms": 12.0,
+    "p99_ms": 18.58,
+    "max_ms": 264.93,
+    "duration_s": 12.01,
+    "concurrency": 10,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 12010,
+   "notes": null
+  },
+  {
+   "test_id": "RATE-keymesh-retry-after",
+   "category": "RATE",
+   "project": "keymesh",
+   "name": "Upstream sends Retry-After on 429",
+   "expected": "rotator backs off instead of hammering",
+   "actual": "0 429 of 1023 (0.0%)",
+   "pass": true,
+   "metrics": {
+    "requests": 1023,
+    "ok": 6,
+    "errors": 0,
+    "statuses": {
+     "200": 6,
+     "502": 1017
+    },
+    "rps": 84.09,
+    "ok_rps": 0.49,
+    "error_rate": 0.9941,
+    "avg_ms": 51.3,
+    "p50_ms": 3.9,
+    "p95_ms": 6.39,
+    "p99_ms": 1040.05,
+    "max_ms": 5178.36,
+    "duration_s": 12.17,
+    "concurrency": 5,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 12170,
+   "notes": null
+  },
+  {
+   "test_id": "REL-keymesh-soak",
+   "category": "REL",
+   "project": "keymesh",
+   "name": "30s sustained load at concurrency 20",
+   "expected": "0 errors",
+   "actual": "0.00% errors over 10789 req",
+   "pass": true,
+   "metrics": {
+    "requests": 10789,
+    "ok": 10789,
+    "errors": 0,
+    "statuses": {
+     "200": 10789
+    },
+    "rps": 359.13,
+    "ok_rps": 359.13,
+    "error_rate": 0.0,
+    "avg_ms": 55.57,
+    "p50_ms": 52.06,
+    "p95_ms": 72.27,
+    "p99_ms": 93.14,
+    "max_ms": 231.27,
+    "duration_s": 30.04,
+    "concurrency": 20,
+    "timeouts": 0,
+    "conn_errors": 0
+   },
+   "error": null,
+   "duration_ms": 30040,
+   "notes": null
+  },
+  {
+   "test_id": "REL-keymesh-memory-growth",
+   "category": "REL",
+   "project": "keymesh",
+   "name": "Memory stays flat during the soak",
+   "expected": "<= 15% RSS growth",
+   "actual": "32732 kB (28.2%)",
+   "pass": false,
+   "metrics": {
+    "rss_start_kb": 116196,
+    "rss_end_kb": 148928,
+    "growth_kb": 32732
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-keymesh-garbage-upstream",
+   "category": "REL",
+   "project": "keymesh",
+   "name": "Upstream returns a non-JSON body",
+   "expected": "no crash, response still returned",
+   "actual": "statuses={'502': 10}",
+   "pass": true,
+   "metrics": {
+    "statuses": {
+     "502": 10
+    },
+    "ok": 0,
+    "n": 10,
+    "p95_ms": 26.0,
+    "max_ms": 26.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-keymesh-survives-garbage",
+   "category": "REL",
+   "project": "keymesh",
+   "name": "Process alive after malformed upstream",
+   "expected": "process still running",
+   "actual": "alive=True",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-keymesh-bad-request-body",
+   "category": "REL",
+   "project": "keymesh",
+   "name": "Client sends malformed JSON",
+   "expected": "4xx, no crash",
+   "actual": "status 200",
+   "pass": false,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "REL-keymesh-alive-after-bad-body",
+   "category": "REL",
+   "project": "keymesh",
+   "name": "Process alive after malformed client body",
+   "expected": "process still running",
+   "actual": "alive=True",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-keymesh-openai-shape",
+   "category": "API",
+   "project": "keymesh",
+   "name": "OpenAI-compatible request/response",
+   "expected": "HTTP 200 with an OpenAI-shaped body",
+   "actual": "HTTP 200, shape_ok=True",
+   "pass": true,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-keymesh-body-forwarded",
+   "category": "API",
+   "project": "keymesh",
+   "name": "Request body reaches the upstream",
+   "expected": "upstream saw 1 request",
+   "actual": "checked via upstream counter",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-keymesh-header-forwarding",
+   "category": "API",
+   "project": "keymesh",
+   "name": "Custom client headers are forwarded",
+   "expected": "x-custom-tag reaches upstream",
+   "actual": "1 hit(s)",
+   "pass": true,
+   "metrics": {
+    "hits": 1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-keymesh-stream-flag",
+   "category": "API",
+   "project": "keymesh",
+   "name": "Streaming flag is preserved end to end",
+   "expected": "upstream sees stream=true",
+   "actual": "1 stream request(s)",
+   "pass": true,
+   "metrics": {
+    "seen": 1
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-keymesh-error-propagation",
+   "category": "API",
+   "project": "keymesh",
+   "name": "Upstream 5xx is surfaced, not hidden",
+   "expected": "5xx to the client",
+   "actual": "HTTP 502",
+   "pass": true,
+   "metrics": {
+    "status": 502
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-keymesh-unknown-route",
+   "category": "API",
+   "project": "keymesh",
+   "name": "Unknown API route answers cleanly",
+   "expected": "n/a - forwards every path upstream by design",
+   "actual": "HTTP 502",
+   "pass": null,
+   "metrics": {
+    "status": 502
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "API-keymesh-anthropic-endpoint",
+   "category": "API",
+   "project": "keymesh",
+   "name": "Anthropic-style endpoint exists",
+   "expected": "endpoint answers (200 with failover)",
+   "actual": "HTTP 200, 254 bytes",
+   "pass": true,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-unauth-__keymesh_inspect",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Unauthenticated GET /__keymesh_inspect",
+   "expected": "401/403 or no data",
+   "actual": "HTTP 200, 3016 bytes",
+   "pass": false,
+   "metrics": {
+    "status": 200,
+    "bytes": 3016
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": "readable without credentials"
+  },
+  {
+   "test_id": "SEC-keymesh-key-material-in-admin",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Admin payload contains raw upstream keys",
+   "expected": "keys masked or encrypted",
+   "actual": "0 raw keys visible",
+   "pass": true,
+   "metrics": {
+    "leaked": []
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-at-rest-plaintext",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Upstream keys are not stored in plaintext",
+   "expected": "no plaintext key on disk",
+   "actual": "no plaintext key on disk",
+   "pass": true,
+   "metrics": {
+    "found": false,
+    "detail": "no plaintext key on disk",
+    "file": null
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-logs-leak",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Full upstream keys never appear in logs",
+   "expected": "no full key in log output",
+   "actual": "none found",
+   "pass": true,
+   "metrics": {
+    "leaked": [],
+    "log_bytes": 8171
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-metrics-auth",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Metrics endpoint is access controlled",
+   "expected": "n/a - no metrics endpoint",
+   "actual": "no metrics surface",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "no metrics endpoint to protect"
+  },
+  {
+   "test_id": "SEC-keymesh-default-proxy-key",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Documented default proxy key is rejected",
+   "expected": "401/403",
+   "actual": "HTTP 200",
+   "pass": false,
+   "metrics": {
+    "status": 200
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-cors",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "No wildcard CORS on the API",
+   "expected": "no access-control-allow-origin: *",
+   "actual": "acao=None",
+   "pass": true,
+   "metrics": {
+    "acao": null
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-error-message",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Error responses do not leak internals",
+   "expected": "no stack traces or file paths",
+   "actual": "HTTP 200: {\"id\":\"chatcmpl-bench\",\"object\":\"chat.completion\",\"created\":1795184735,\"model\":\"bench-model\",\"choices\":[{\"index\":0,\"mess",
+   "pass": true,
+   "metrics": {
+    "body": "{\"id\":\"chatcmpl-bench\",\"object\":\"chat.completion\",\"created\":1795184735,\"model\":\"bench-model\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"ok\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":7,\"completion_tokens\":3,\"total_tokens\":10}}"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-security-headers",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Security headers on the HTTP surface",
+   "expected": ">= 2 of nosniff/frame-options/CSP",
+   "actual": "0 present: []",
+   "pass": false,
+   "metrics": {
+    "headers": []
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-dependencies",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Dependency audit",
+   "expected": "0 high/critical in production deps",
+   "actual": "0 production vulnerabilities over 0 deps",
+   "pass": true,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SEC-keymesh-header-label-injection",
+   "category": "SEC",
+   "project": "keymesh",
+   "name": "Non-ASCII key label does not break responses",
+   "expected": "not applicable (no key labels exposed as headers)",
+   "actual": "n/a",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-keymesh-health",
+   "category": "OBS",
+   "project": "keymesh",
+   "name": "Health endpoint answers 200",
+   "expected": "200",
+   "actual": "{'inspect': 200}",
+   "pass": true,
+   "metrics": {
+    "health": {
+     "inspect": 200
+    }
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-keymesh-metrics-accuracy",
+   "category": "OBS",
+   "project": "keymesh",
+   "name": "Prometheus counter matches observed traffic",
+   "expected": "not implemented",
+   "actual": "no metrics endpoint",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "missing feature"
+  },
+  {
+   "test_id": "OBS-keymesh-metrics-format",
+   "category": "OBS",
+   "project": "keymesh",
+   "name": "Metrics endpoint speaks Prometheus format",
+   "expected": "not implemented",
+   "actual": "no metrics endpoint",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "missing feature"
+  },
+  {
+   "test_id": "OBS-keymesh-logging",
+   "category": "OBS",
+   "project": "keymesh",
+   "name": "Request-level logging exists",
+   "expected": "log grows with traffic",
+   "actual": "69 log lines on disk",
+   "pass": true,
+   "metrics": {
+    "lines": 69
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "OBS-keymesh-error-visibility",
+   "category": "OBS",
+   "project": "keymesh",
+   "name": "Failures are observable (metrics/logs)",
+   "expected": "error counters or error log lines",
+   "actual": "error_metric=False",
+   "pass": false,
+   "metrics": {
+    "samples": 0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-keymesh-invalid-value",
+   "category": "CFG",
+   "project": "keymesh",
+   "name": "Invalid configuration value is rejected",
+   "expected": "process exits non-zero with a message",
+   "actual": "rc=1",
+   "pass": true,
+   "metrics": {
+    "rc": 1,
+    "output": "keymesh: Invalid --port: not-a-port\n"
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "CFG-keymesh-reload",
+   "category": "CFG",
+   "project": "keymesh",
+   "name": "Settings hot-reload without restart",
+   "expected": "not implemented (restart required)",
+   "actual": "no runtime config API",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "restart required"
+  },
+  {
+   "test_id": "CFG-keymesh-backup",
+   "category": "CFG",
+   "project": "keymesh",
+   "name": "Configuration backup/export",
+   "expected": "not implemented",
+   "actual": "no export endpoint",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "missing feature"
+  },
+  {
+   "test_id": "CFG-keymesh-restore",
+   "category": "CFG",
+   "project": "keymesh",
+   "name": "Configuration restore/import endpoint",
+   "expected": "not implemented",
+   "actual": "no import endpoint",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "missing feature"
+  },
+  {
+   "test_id": "CFG-keymesh-persistence",
+   "category": "CFG",
+   "project": "keymesh",
+   "name": "Keys survive a restart",
+   "expected": "not implemented (memory only)",
+   "actual": "state lost on restart",
+   "pass": null,
+   "metrics": {},
+   "error": null,
+   "duration_ms": null,
+   "notes": "memory-only state"
+  },
+  {
+   "test_id": "SCALE-keymesh-boot-10",
+   "category": "SCALE",
+   "project": "keymesh",
+   "name": "Boot with 10 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "452 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 451.5,
+    "rss_kb": 56632,
+    "rps": 196.48,
+    "p95_ms": 126.89,
+    "errors": 0.0,
+    "requests": 997
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-keymesh-rps-10",
+   "category": "SCALE",
+   "project": "keymesh",
+   "name": "Throughput with 10 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "196.48 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 451.5,
+    "rss_kb": 56632,
+    "rps": 196.48,
+    "p95_ms": 126.89,
+    "errors": 0.0,
+    "requests": 997
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-keymesh-rss-10",
+   "category": "MEM",
+   "project": "keymesh",
+   "name": "RSS with 10 keys",
+   "expected": "measured",
+   "actual": "56632 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 56632,
+    "keys": 10,
+    "rss_per_key_kb": 5663.2
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-keymesh-boot-100",
+   "category": "SCALE",
+   "project": "keymesh",
+   "name": "Boot with 100 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "439 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 439.0,
+    "rss_kb": 56952,
+    "rps": 183.91,
+    "p95_ms": 142.45,
+    "errors": 0.0,
+    "requests": 932
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-keymesh-rps-100",
+   "category": "SCALE",
+   "project": "keymesh",
+   "name": "Throughput with 100 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "183.91 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 439.0,
+    "rss_kb": 56952,
+    "rps": 183.91,
+    "p95_ms": 142.45,
+    "errors": 0.0,
+    "requests": 932
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-keymesh-rss-100",
+   "category": "MEM",
+   "project": "keymesh",
+   "name": "RSS with 100 keys",
+   "expected": "measured",
+   "actual": "56952 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 56952,
+    "keys": 100,
+    "rss_per_key_kb": 569.5
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-keymesh-boot-1000",
+   "category": "SCALE",
+   "project": "keymesh",
+   "name": "Boot with 1000 keys",
+   "expected": "boots and answers within 90s",
+   "actual": "508 ms",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 508.2,
+    "rss_kb": 59044,
+    "rps": 169.26,
+    "p95_ms": 146.82,
+    "errors": 0.0,
+    "requests": 859
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-keymesh-rps-1000",
+   "category": "SCALE",
+   "project": "keymesh",
+   "name": "Throughput with 1000 keys at concurrency 20",
+   "expected": "serves traffic",
+   "actual": "169.26 rps, 0.0% errors",
+   "pass": true,
+   "metrics": {
+    "boot_ms": 508.2,
+    "rss_kb": 59044,
+    "rps": 169.26,
+    "p95_ms": 146.82,
+    "errors": 0.0,
+    "requests": 859
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-keymesh-rss-1000",
+   "category": "MEM",
+   "project": "keymesh",
+   "name": "RSS with 1000 keys",
+   "expected": "measured",
+   "actual": "59044 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 59044,
+    "keys": 1000,
+    "rss_per_key_kb": 59.0
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "SCALE-keymesh-repeated-init",
+   "category": "SCALE",
+   "project": "keymesh",
+   "name": "Repeated initialisation is stable",
+   "expected": "3 boots, spread < 50% of median",
+   "actual": "boots=[518.4, 525.8, 455.5] med=518ms",
+   "pass": true,
+   "metrics": {
+    "boots_ms": [
+     518.4,
+     525.8,
+     455.5
+    ]
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "MEM-keymesh-startup-rss",
+   "category": "MEM",
+   "project": "keymesh",
+   "name": "Startup RSS",
+   "expected": "measured",
+   "actual": "56404 kB",
+   "pass": true,
+   "metrics": {
+    "rss_kb": 56404
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-keymesh-install-one-command",
+   "category": "DX",
+   "project": "keymesh",
+   "name": "One-command start without a build step",
+   "expected": "yes",
+   "actual": "documented quick start found",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 295,
+    "readme_sections": 24,
+    "readme_bytes": 13967,
+    "dockerfile": false,
+    "compose": false,
+    "openapi": false,
+    "test_files": 21,
+    "last_commit": "2026-05-30",
+    "commit_count": "1",
+    "loc": 4243
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-keymesh-docs-depth",
+   "category": "DX",
+   "project": "keymesh",
+   "name": "Documentation covers setup, config and API (>= 15 sections)",
+   "expected": "yes",
+   "actual": "24 markdown headings",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 295,
+    "readme_sections": 24,
+    "readme_bytes": 13967,
+    "dockerfile": false,
+    "compose": false,
+    "openapi": false,
+    "test_files": 21,
+    "last_commit": "2026-05-30",
+    "commit_count": "1",
+    "loc": 4243
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-keymesh-docker",
+   "category": "DX",
+   "project": "keymesh",
+   "name": "Container deployment shipped",
+   "expected": "yes",
+   "actual": "Dockerfile=False compose=False",
+   "pass": false,
+   "metrics": {
+    "readme_lines": 295,
+    "readme_sections": 24,
+    "readme_bytes": 13967,
+    "dockerfile": false,
+    "compose": false,
+    "openapi": false,
+    "test_files": 21,
+    "last_commit": "2026-05-30",
+    "commit_count": "1",
+    "loc": 4243
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-keymesh-api-spec",
+   "category": "DX",
+   "project": "keymesh",
+   "name": "Machine-readable API specification",
+   "expected": "yes",
+   "actual": "no spec file",
+   "pass": false,
+   "metrics": {
+    "readme_lines": 295,
+    "readme_sections": 24,
+    "readme_bytes": 13967,
+    "dockerfile": false,
+    "compose": false,
+    "openapi": false,
+    "test_files": 21,
+    "last_commit": "2026-05-30",
+    "commit_count": "1",
+    "loc": 4243
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-keymesh-tests",
+   "category": "DX",
+   "project": "keymesh",
+   "name": "Automated test suite present",
+   "expected": "yes",
+   "actual": "21 test files",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 295,
+    "readme_sections": 24,
+    "readme_bytes": 13967,
+    "dockerfile": false,
+    "compose": false,
+    "openapi": false,
+    "test_files": 21,
+    "last_commit": "2026-05-30",
+    "commit_count": "1",
+    "loc": 4243
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-keymesh-maintenance",
+   "category": "DX",
+   "project": "keymesh",
+   "name": "Actively maintained (commit within 12 months)",
+   "expected": "yes",
+   "actual": "last commit 2026-05-30",
+   "pass": true,
+   "metrics": {
+    "readme_lines": 295,
+    "readme_sections": 24,
+    "readme_bytes": 13967,
+    "dockerfile": false,
+    "compose": false,
+    "openapi": false,
+    "test_files": 21,
+    "last_commit": "2026-05-30",
+    "commit_count": "1",
+    "loc": 4243
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  },
+  {
+   "test_id": "DX-keymesh-code-size",
+   "category": "DX",
+   "project": "keymesh",
+   "name": "Code base size (informational)",
+   "expected": "measured",
+   "actual": "4243 LOC across the repository",
+   "pass": null,
+   "metrics": {
+    "loc": 4243
+   },
+   "error": null,
+   "duration_ms": null,
+   "notes": null
+  }
+ ]
+}

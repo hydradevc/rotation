@@ -34,11 +34,12 @@ export function dropRuntime(id) {
   runtimes.delete(id);
 }
 
-function sumWindow(r, arr, nowSec) {
+function sumWindow(r, arr, nowSec, slack = 0) {
   let total = 0;
+  const from = nowSec - WINDOW - slack;
   for (let i = 0; i < BUCKETS; i++) {
     const e = r.epoch[i];
-    if (e <= nowSec && e > nowSec - WINDOW) total += arr[i];
+    if (e <= nowSec && e > from) total += arr[i];
   }
   return total;
 }
@@ -127,14 +128,14 @@ export function clearCooldown(key) {
 }
 
 function scoreOf(key, r, nowSec) {
-  const rpm = sumWindow(r, r.rpm, nowSec);
-  const tpm = sumWindow(r, r.tpm, nowSec);
+  const rpm = sumWindow(r, r.rpm, nowSec, 2);
+  const tpm = sumWindow(r, r.tpm, nowSec, 2);
   if (key.rpm && rpm >= key.rpm) return Infinity;
   if (key.tpm && tpm >= key.tpm) return Infinity;
   const load = (r.inflight + 1) / (key.weight || 1);
   const rpmPressure = key.rpm ? rpm / key.rpm : 0;
   const tpmPressure = key.tpm ? tpm / key.tpm : 0;
-  return load * (1 + rpmPressure * 0.85 + tpmPressure * 0.85) + r.fails * 2;
+  return load * (1 + rpmPressure * 3 + tpmPressure * 3) + r.fails * 2;
 }
 
 function eligible({ provider = null, nativeFormat = null, exclude = null, now = Date.now() }) {
@@ -156,11 +157,26 @@ function eligible({ provider = null, nativeFormat = null, exclude = null, now = 
 
 function hasCapacity(key, nowSec) {
   const r = rt(key);
-  const rpm = sumWindow(r, r.rpm, nowSec);
-  const tpm = sumWindow(r, r.tpm, nowSec);
+  const rpm = sumWindow(r, r.rpm, nowSec, 2);
+  const tpm = sumWindow(r, r.tpm, nowSec, 2);
   if (key.rpm && rpm >= key.rpm) return false;
   if (key.tpm && tpm >= key.tpm) return false;
   return true;
+}
+
+let randomBag = [];
+
+function pickRandomBag(pool) {
+  randomBag = randomBag.filter((id) => pool.some((k) => k.id === id));
+  if (!randomBag.length) {
+    randomBag = pool.map((k) => k.id);
+    for (let i = randomBag.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [randomBag[i], randomBag[j]] = [randomBag[j], randomBag[i]];
+    }
+  }
+  const id = randomBag.pop();
+  return pool.find((k) => k.id === id) || pool[0];
 }
 
 function pickSmart(pool, nowSec) {
@@ -203,14 +219,26 @@ function pickWeighted(pool) {
   return pool[pool.length - 1];
 }
 
-export function pickKey({ provider = null, nativeFormat = null, exclude = null } = {}) {
+export function pickKey({ provider = null, nativeFormat = null, exclude = null, allowOverflow = false } = {}) {
   const now = Date.now();
   const nowSec = Math.floor(now / 1000);
   const pool = eligible({ provider, nativeFormat, exclude, now });
   if (!pool.length) return null;
 
   const usable = pool.filter((k) => hasCapacity(k, nowSec));
-  if (!usable.length) return null;
+  if (!usable.length) {
+    if (!allowOverflow) return null;
+    let best = null;
+    let bestUsed = Infinity;
+    for (const key of pool) {
+      const used = sumWindow(rt(key), rt(key).rpm, nowSec, 2) / Math.max(1, key.rpm || 1);
+      if (used < bestUsed) {
+        bestUsed = used;
+        best = key;
+      }
+    }
+    return best;
+  }
 
   const policy = state.settings.policy || 'smart';
   if (policy === 'round-robin') {
@@ -218,7 +246,7 @@ export function pickKey({ provider = null, nativeFormat = null, exclude = null }
     return usable[rrCursor];
   }
   if (policy === 'random') {
-    return usable[(Math.random() * usable.length) | 0];
+    return pickRandomBag(usable);
   }
   if (policy === 'weighted') {
     return pickWeighted(usable);

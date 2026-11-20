@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS = {
   autoDisableAfterAuthFails: 5,
   policy: 'smart',
   queueWaitMs: 5000,
+  strictLimits: false,
   circuitThreshold: 4,
   circuitCooldownMs: 120000,
   models: [],
@@ -57,8 +58,8 @@ export function newAccessKey() {
 }
 
 export function maskKey(key = '') {
-  if (key.length <= 10) return key.slice(0, 3) + '…';
-  return key.slice(0, 6) + '…' + key.slice(-4);
+  if (key.length <= 10) return key.slice(0, 3) + '...';
+  return key.slice(0, 6) + '...' + key.slice(-4);
 }
 
 export function normalizeKey(input) {

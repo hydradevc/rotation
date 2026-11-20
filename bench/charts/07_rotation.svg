@@ -1,0 +1,48 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='880' height='420' viewBox='0 0 880 420'>
+<rect width='880' height='420' fill='#ffffff'/>
+<text x='440.0' y='30' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='18' font-weight='600' fill='#111'>Rotation balance: deviation from an even split (%)</text>
+<line x1='70' y1='310.0' x2='850' y2='310.0' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='314.0' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>0.0</text>
+<line x1='70' y1='247.5' x2='850' y2='247.5' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='251.5' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>13.4</text>
+<line x1='70' y1='185.0' x2='850' y2='185.0' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='189.0' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>26.9</text>
+<line x1='70' y1='122.5' x2='850' y2='122.5' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='126.5' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>40.3</text>
+<line x1='70' y1='60.0' x2='850' y2='60.0' stroke='#e6e8ec' stroke-width='1'/>
+<text x='62' y='64.0' text-anchor='end' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666'>53.7</text>
+<text x='18' y='185.0' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#666' transform='rotate(-90 18 185.0)' text-anchor='middle'>deviation %</text>
+<rect x='76.9' y='310.0' width='19.6' height='0.0' fill='#2f6fed' rx='3'/>
+<text x='86.7' y='305.0' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>0.0</text>
+<rect x='99.7' y='310.0' width='19.6' height='0.0' fill='#e0533d' rx='3'/>
+<text x='109.5' y='305.0' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>0.0</text>
+<rect x='122.5' y='310.0' width='19.6' height='0.0' fill='#1f9d63' rx='3'/>
+<text x='132.4' y='305.0' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>0.0</text>
+<text x='113.3' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>round-robin</text>
+<rect x='163.6' y='108.4' width='19.6' height='201.6' fill='#2f6fed' rx='3'/>
+<text x='173.4' y='103.4' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>43.3</text>
+<rect x='186.4' y='185.7' width='19.6' height='124.3' fill='#e0533d' rx='3'/>
+<text x='196.2' y='180.7' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>26.7</text>
+<text x='200.0' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>random</text>
+<rect x='250.3' y='170.3' width='19.6' height='139.7' fill='#2f6fed' rx='3'/>
+<text x='260.1' y='165.3' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>30.0</text>
+<rect x='273.1' y='310.0' width='19.6' height='0.0' fill='#e0533d' rx='3'/>
+<text x='282.9' y='305.0' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>0.0</text>
+<text x='286.7' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>weighted</text>
+<rect x='336.9' y='92.6' width='19.6' height='217.4' fill='#2f6fed' rx='3'/>
+<text x='346.7' y='87.6' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>46.7</text>
+<rect x='359.7' y='310.0' width='19.6' height='0.0' fill='#e0533d' rx='3'/>
+<text x='369.5' y='305.0' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='10' fill='#333'>0.0</text>
+<text x='373.3' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>smart</text>
+<text x='460.0' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>round-robin</text>
+<text x='546.7' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>weighted</text>
+<text x='633.3' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>least-used</text>
+<text x='720.0' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>sequential-then-rotate</text>
+<text x='806.7' y='328' text-anchor='middle' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='11' fill='#222'>round_robin</text>
+<rect x='70' y='376' width='12' height='12' fill='#2f6fed' rx='2'/>
+<text x='88' y='386' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='12' fill='#222'>hydra</text>
+<rect x='140.0' y='376' width='12' height='12' fill='#e0533d' rx='2'/>
+<text x='158.0' y='386' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='12' fill='#222'>keymesh</text>
+<rect x='224.4' y='376' width='12' height='12' fill='#1f9d63' rx='2'/>
+<text x='242.4' y='386' font-family='DejaVu Sans, Helvetica, Arial, sans-serif' font-size='12' fill='#222'>apikeyrotator</text>
+</svg>

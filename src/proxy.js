@@ -125,6 +125,11 @@ function errPayload(format, status, message, type = 'invalid_request_error') {
   };
 }
 
+function headerSafe(value) {
+  const text = String(value ?? '');
+  return /^[\x20-\x7E]*$/.test(text) ? text : encodeURIComponent(text);
+}
+
 function presentedKey(req) {
   const auth = req.headers.authorization || '';
   const bearer = /^Bearer\s+(.+)$/i.exec(auth);
@@ -230,8 +235,43 @@ function isRetryable(status) {
   return status === 401 || status === 403 || list.includes(status);
 }
 
+const HOP_HEADERS = new Set([
+  'host',
+  'connection',
+  'keep-alive',
+  'transfer-encoding',
+  'content-length',
+  'upgrade',
+  'te',
+  'trailer',
+  'proxy-authorization',
+  'proxy-connection',
+  'authorization',
+  'x-api-key',
+  'cookie',
+  'content-type',
+  'accept',
+  'accept-encoding'
+]);
+
+function forwardableHeaders(req) {
+  const out = {};
+  for (const [name, value] of Object.entries(req.headers)) {
+    const lower = name.toLowerCase();
+    if (HOP_HEADERS.has(lower) || lower.startsWith('sec-')) continue;
+    if (typeof value === 'string') {
+      if (/^[\x20-\x7E]*$/.test(value)) out[lower] = value;
+    } else if (Array.isArray(value)) {
+      const joined = value.filter((v) => /^[\x20-\x7E]*$/.test(v)).join(', ');
+      if (joined) out[lower] = joined;
+    }
+  }
+  return out;
+}
+
 function buildUpstreamHeaders(key, req) {
   const headers = {
+    ...forwardableHeaders(req),
     'content-type': 'application/json',
     accept: 'application/json'
   };
@@ -298,11 +338,6 @@ function chargeTotals({ tin = 0, tout = 0, ok }) {
 
 function logRequest(entry) {
   pushLog({ ts: Date.now(), ...entry });
-}
-
-// Key labels are user-facing and may hold non-ASCII text; Node rejects those in header values.
-function headerSafe(value) {
-  return String(value ?? '').replace(/[^\x20-\x7e]/g, (ch) => encodeURIComponent(ch));
 }
 
 function finishFailure(res, { clientFormat, status, message, retryAfterMs = 0 }) {
@@ -550,7 +585,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
   const wantsStream = Boolean(body.stream) && kind !== 'embeddings';
 
   while (attempts < settings.maxAttempts && Date.now() - startedAt < settings.deadlineMs) {
-    const key = pickKey({ provider, nativeFormat: clientFormat, exclude: tried });
+    let key = pickKey({ provider, nativeFormat: clientFormat, exclude: tried });
 
     if (!key) {
       const left = settings.deadlineMs - (Date.now() - startedAt);
@@ -563,8 +598,11 @@ export async function handleProxy(req, res, url, bodyBuf) {
         await sleep(pause);
         continue;
       }
-      break;
+      if (settings.strictLimits) break;
+      key = pickKey({ provider, nativeFormat: clientFormat, exclude: tried, allowOverflow: true });
     }
+
+    if (!key) break;
 
     tried.add(key.id);
     attempts += 1;
@@ -742,11 +780,13 @@ export async function handleProxy(req, res, url, bodyBuf) {
     return;
   }
 
-  const status = lastFailure?.status === 429 ? 429 : lastFailure ? 502 : 503;
+  const status = lastFailure?.status === 429 ? 503 : lastFailure ? 502 : 503;
   const message =
-    status === 503
-      ? 'no upstream key available — add keys to the pool or wait for cooldowns'
-      : lastFailure?.message || 'upstream failed';
+    lastFailure?.status === 429
+      ? 'pool saturated: every upstream key is rate limited right now'
+      : status === 503
+        ? 'no upstream key available — add keys to the pool or wait for cooldowns'
+        : lastFailure?.message || 'upstream failed';
   const retryAfter = lastFailure?.waited || Math.min(settings.queueWaitMs || 5000, 15000);
   settleBudget(client, reserved, 0);
   chargeTotals({ ok: false });

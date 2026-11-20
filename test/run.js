@@ -151,6 +151,21 @@ async function main() {
     check('requests spread across keys', usedKeys.size >= 15, `${usedKeys.size} distinct keys`);
     check('single request latency sane', elapsed / 60 < 200, `${Math.round(elapsed / 60)}ms avg wall per request`);
 
+    const headerProbe = await fetch(`${BASE}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer ' + CLIENT_KEY,
+        'content-type': 'application/json',
+        'x-custom-tag': 'bench-header'
+      },
+      body: JSON.stringify({ model: 'mock-model', messages: [{ role: 'user', content: 'headers' }] })
+    }).then((r) => r.json());
+    check(
+      'custom client headers reach the upstream',
+      String(headerProbe?.choices?.[0]?.message?.content || '').includes('bench-header'),
+      String(headerProbe?.choices?.[0]?.message?.content || '').slice(0, 60)
+    );
+
     const sample = wave[0];
     check('usage propagated', sample.json?.usage?.completion_tokens === 12, JSON.stringify(sample.json?.usage));
 
@@ -185,8 +200,8 @@ async function main() {
         chat({ model: 'mock-model', messages: [{ role: 'user', content: 'rate test 2' }] })
       )
     );
-    const overkill429 = overkill.filter((r) => r.status === 429).length;
-    check('pool reports 429 once saturated', overkill429 > 0, `${overkill429}/12 rejected`);
+    const overkillSaturated = overkill.filter((r) => r.status === 429 || r.status === 503).length;
+    check('pool reports saturation once every key is limited', overkillSaturated > 0, `${overkillSaturated}/12 rejected`);
 
     // --- streaming
     await admin('/admin/api/keys', 'DELETE');

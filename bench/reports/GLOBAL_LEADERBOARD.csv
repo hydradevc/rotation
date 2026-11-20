@@ -1,0 +1,4 @@
+rank,project,score,tier,pass_rate,tests_passed,tests_failed,tests_na,PERF,ROT,FAIL,RATE,REL,SCALE,SEC,MEM,API,CFG,OBS,DX
+1,hydra,86.68,Excellent,0.9265,63,5,4,92.1,81.82,100.0,85.71,83.33,73.71,100.0,28.48,85.71,100.0,100.0,100.0
+2,keymesh,85.7,Excellent,0.8462,44,8,18,100.0,100.0,100.0,100.0,66.67,99.42,66.67,34.65,100.0,100.0,66.67,66.67
+3,apikeyrotator,67.59,Good,0.66,33,17,13,77.19,100.0,50.0,0.0,83.33,70.78,45.45,100.0,100.0,100.0,66.67,50.0

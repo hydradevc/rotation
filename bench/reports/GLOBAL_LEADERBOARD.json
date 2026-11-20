@@ -1,0 +1,343 @@
+{
+  "weights": {
+    "PERF": 10,
+    "ROT": 12,
+    "FAIL": 12,
+    "RATE": 10,
+    "REL": 10,
+    "SCALE": 8,
+    "SEC": 10,
+    "MEM": 6,
+    "API": 6,
+    "CFG": 5,
+    "OBS": 5,
+    "DX": 6
+  },
+  "ranking": [
+    {
+      "project": "hydra",
+      "score": 86.68,
+      "tier": "Excellent",
+      "categories": {
+        "PERF": 92.1,
+        "MEM": 28.48,
+        "SCALE": 73.71,
+        "ROT": 81.82,
+        "FAIL": 100.0,
+        "RATE": 85.71,
+        "REL": 83.33,
+        "SEC": 100.0,
+        "API": 85.71,
+        "CFG": 100.0,
+        "OBS": 100.0,
+        "DX": 100.0
+      },
+      "counts": {
+        "ROT": {
+          "passed": 9,
+          "failed": 2,
+          "na": 3,
+          "total": 14,
+          "pass_rate": 0.8182
+        },
+        "FAIL": {
+          "passed": 8,
+          "failed": 0,
+          "na": 0,
+          "total": 8,
+          "pass_rate": 1.0
+        },
+        "RATE": {
+          "passed": 6,
+          "failed": 1,
+          "na": 0,
+          "total": 7,
+          "pass_rate": 0.8571
+        },
+        "REL": {
+          "passed": 5,
+          "failed": 1,
+          "na": 0,
+          "total": 6,
+          "pass_rate": 0.8333
+        },
+        "SEC": {
+          "passed": 13,
+          "failed": 0,
+          "na": 0,
+          "total": 13,
+          "pass_rate": 1.0
+        },
+        "API": {
+          "passed": 6,
+          "failed": 1,
+          "na": 0,
+          "total": 7,
+          "pass_rate": 0.8571
+        },
+        "CFG": {
+          "passed": 5,
+          "failed": 0,
+          "na": 0,
+          "total": 5,
+          "pass_rate": 1.0
+        },
+        "OBS": {
+          "passed": 5,
+          "failed": 0,
+          "na": 0,
+          "total": 5,
+          "pass_rate": 1.0
+        },
+        "DX": {
+          "passed": 6,
+          "failed": 0,
+          "na": 1,
+          "total": 7,
+          "pass_rate": 1.0
+        }
+      },
+      "raw": {
+        "PERF": {
+          "rps": 356.57,
+          "p95_ms": 316.92,
+          "p99_ms": 429.69,
+          "error_rate": 0.0
+        },
+        "MEM": {
+          "rss_1000_kb": 71832,
+          "startup_rss_kb": 57112
+        }
+      },
+      "rank": 1,
+      "reliability_index": 91.66,
+      "performance_index": 92.1,
+      "security_score": 100.0,
+      "compatibility_score": 85.71,
+      "pass_rate": 0.9265,
+      "tests": {
+        "passed": 63,
+        "failed": 5,
+        "not_applicable": 4,
+        "total": 72
+      }
+    },
+    {
+      "project": "keymesh",
+      "score": 85.7,
+      "tier": "Excellent",
+      "categories": {
+        "PERF": 100.0,
+        "MEM": 34.65,
+        "SCALE": 99.42,
+        "ROT": 100.0,
+        "FAIL": 100.0,
+        "RATE": 100.0,
+        "REL": 66.67,
+        "SEC": 66.67,
+        "API": 100.0,
+        "CFG": 100.0,
+        "OBS": 66.67,
+        "DX": 66.67
+      },
+      "counts": {
+        "ROT": {
+          "passed": 11,
+          "failed": 0,
+          "na": 3,
+          "total": 14,
+          "pass_rate": 1.0
+        },
+        "FAIL": {
+          "passed": 8,
+          "failed": 0,
+          "na": 0,
+          "total": 8,
+          "pass_rate": 1.0
+        },
+        "RATE": {
+          "passed": 2,
+          "failed": 0,
+          "na": 5,
+          "total": 7,
+          "pass_rate": 1.0
+        },
+        "REL": {
+          "passed": 4,
+          "failed": 2,
+          "na": 0,
+          "total": 6,
+          "pass_rate": 0.6667
+        },
+        "SEC": {
+          "passed": 6,
+          "failed": 3,
+          "na": 2,
+          "total": 11,
+          "pass_rate": 0.6667
+        },
+        "API": {
+          "passed": 6,
+          "failed": 0,
+          "na": 1,
+          "total": 7,
+          "pass_rate": 1.0
+        },
+        "CFG": {
+          "passed": 1,
+          "failed": 0,
+          "na": 4,
+          "total": 5,
+          "pass_rate": 1.0
+        },
+        "OBS": {
+          "passed": 2,
+          "failed": 1,
+          "na": 2,
+          "total": 5,
+          "pass_rate": 0.6667
+        },
+        "DX": {
+          "passed": 4,
+          "failed": 2,
+          "na": 1,
+          "total": 7,
+          "pass_rate": 0.6667
+        }
+      },
+      "raw": {
+        "PERF": {
+          "rps": 408.01,
+          "p95_ms": 289.34,
+          "p99_ms": 424.42,
+          "error_rate": 0.0
+        },
+        "MEM": {
+          "rss_1000_kb": 59044,
+          "startup_rss_kb": 56404
+        }
+      },
+      "rank": 2,
+      "reliability_index": 83.34,
+      "performance_index": 100.0,
+      "security_score": 66.67,
+      "compatibility_score": 100.0,
+      "pass_rate": 0.8462,
+      "tests": {
+        "passed": 44,
+        "failed": 8,
+        "not_applicable": 18,
+        "total": 70
+      }
+    },
+    {
+      "project": "apikeyrotator",
+      "score": 67.59,
+      "tier": "Good",
+      "categories": {
+        "PERF": 77.19,
+        "MEM": 100.0,
+        "SCALE": 70.78,
+        "ROT": 100.0,
+        "FAIL": 50.0,
+        "RATE": 0.0,
+        "REL": 83.33,
+        "SEC": 45.45,
+        "API": 100.0,
+        "CFG": 100.0,
+        "OBS": 66.67,
+        "DX": 50.0
+      },
+      "counts": {
+        "ROT": {
+          "passed": 5,
+          "failed": 0,
+          "na": 0,
+          "total": 5,
+          "pass_rate": 1.0
+        },
+        "FAIL": {
+          "passed": 4,
+          "failed": 4,
+          "na": 0,
+          "total": 8,
+          "pass_rate": 0.5
+        },
+        "RATE": {
+          "passed": 0,
+          "failed": 2,
+          "na": 5,
+          "total": 7,
+          "pass_rate": 0.0
+        },
+        "REL": {
+          "passed": 5,
+          "failed": 1,
+          "na": 0,
+          "total": 6,
+          "pass_rate": 0.8333
+        },
+        "SEC": {
+          "passed": 5,
+          "failed": 6,
+          "na": 2,
+          "total": 13,
+          "pass_rate": 0.4545
+        },
+        "API": {
+          "passed": 7,
+          "failed": 0,
+          "na": 0,
+          "total": 7,
+          "pass_rate": 1.0
+        },
+        "CFG": {
+          "passed": 2,
+          "failed": 0,
+          "na": 3,
+          "total": 5,
+          "pass_rate": 1.0
+        },
+        "OBS": {
+          "passed": 2,
+          "failed": 1,
+          "na": 2,
+          "total": 5,
+          "pass_rate": 0.6667
+        },
+        "DX": {
+          "passed": 3,
+          "failed": 3,
+          "na": 1,
+          "total": 7,
+          "pass_rate": 0.5
+        }
+      },
+      "raw": {
+        "PERF": {
+          "rps": 339.96,
+          "p95_ms": 410.3,
+          "p99_ms": 668.18,
+          "error_rate": 0.0
+        },
+        "MEM": {
+          "rss_1000_kb": 20456,
+          "startup_rss_kb": 16512
+        }
+      },
+      "rank": 3,
+      "reliability_index": 66.66,
+      "performance_index": 77.19,
+      "security_score": 45.45,
+      "compatibility_score": 50.0,
+      "pass_rate": 0.66,
+      "tests": {
+        "passed": 33,
+        "failed": 17,
+        "not_applicable": 13,
+        "total": 63
+      }
+    }
+  ],
+  "generated_from": "results/raw_results.json"
+}
