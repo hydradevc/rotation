@@ -128,6 +128,15 @@ async function main() {
     check('state shows 20 keys', s.keys.length === 20, `got ${s.keys.length}`);
     check('capacity aggregated', s.summary.capacityRpm === 1200, `capacityRpm=${s.summary.capacityRpm}`);
 
+    const listedModels = await fetch(`${BASE}/v1/models`, {
+      headers: { authorization: 'Bearer ' + CLIENT_KEY }
+    }).then((r) => r.json());
+    check(
+      'models endpoint discovers upstream models',
+      listedModels.data?.some((m) => m.id === 'mock-model'),
+      JSON.stringify(listedModels.data)
+    );
+
     // --- 60 concurrent completions
     const t0 = Date.now();
     const wave = await Promise.all(
@@ -144,6 +153,19 @@ async function main() {
 
     const sample = wave[0];
     check('usage propagated', sample.json?.usage?.completion_tokens === 12, JSON.stringify(sample.json?.usage));
+
+    // --- a label outside latin1 must not break the response headers
+    await admin('/admin/api/keys', 'DELETE');
+    await admin('/admin/api/keys/bulk', 'POST', {
+      text: `тест…метка|sk-unicode-1|http://127.0.0.1:${MOCK_PORT}/v1`
+    });
+    const unicode = await chat({ model: 'mock-model', messages: [{ role: 'user', content: 'unicode label' }] });
+    const unicodeHeader = unicode.headers.get('x-hydra-key') || '';
+    check(
+      'non-ascii key label keeps the response valid',
+      unicode.status === 200 && unicodeHeader.length > 0 && /^[\x20-\x7e]+$/.test(unicodeHeader),
+      `status ${unicode.status} header ${unicodeHeader}`
+    );
 
     // --- rate limit absorption: 6 keys x 5 rpm = 30/min capacity
     await admin('/admin/api/keys', 'DELETE');

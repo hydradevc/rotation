@@ -26,6 +26,11 @@ const MAX_BODY = 32 * 1024 * 1024;
 const CLIENT_WINDOW = 60;
 const CLIENT_BUCKETS = 60;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const MODELS_TTL = 60000;
+const MODELS_FAIL_TTL = 15000;
+const MODELS_TIMEOUT = 5000;
+const MODELS_PROBE_LIMIT = 8;
+const modelsCache = new Map();
 
 const clientRuntime = new Map();
 
@@ -295,6 +300,11 @@ function logRequest(entry) {
   pushLog({ ts: Date.now(), ...entry });
 }
 
+// Key labels are user-facing and may hold non-ASCII text; Node rejects those in header values.
+function headerSafe(value) {
+  return String(value ?? '').replace(/[^\x20-\x7e]/g, (ch) => encodeURIComponent(ch));
+}
+
 function finishFailure(res, { clientFormat, status, message, retryAfterMs = 0 }) {
   const headers = {};
   if (retryAfterMs > 0) headers['retry-after'] = String(Math.max(1, Math.ceil(retryAfterMs / 1000)));
@@ -307,7 +317,7 @@ async function pipeStream({ upstream, res, req, key, client, startedAt, estToken
     'cache-control': 'no-cache, no-transform',
     connection: 'keep-alive',
     'x-accel-buffering': 'no',
-    'x-hydra-key': key.label,
+    'x-hydra-key': headerSafe(key.label),
     'x-hydra-provider': key.provider
   });
   res.flushHeaders?.();
@@ -404,12 +414,61 @@ async function pipeStream({ upstream, res, req, key, client, startedAt, estToken
   observe({ ms: Date.now() - startedAt, status: 200, client: client.name, provider: key.provider });
 }
 
-function modelsPayload(client, format) {
+async function upstreamModels(key) {
+  const cacheKey = `${key.provider}|${key.baseUrl}`;
+  const cached = modelsCache.get(cacheKey);
+  const ttl = cached?.ids.length ? MODELS_TTL : MODELS_FAIL_TTL;
+  if (cached && Date.now() - cached.at < ttl) return cached.ids;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error('models timeout')), MODELS_TIMEOUT);
+  try {
+    const upstream = await fetch(joinUrl(key.baseUrl, '/v1/models'), {
+      method: 'GET',
+      headers: buildUpstreamHeaders(key, { headers: {} }),
+      signal: controller.signal,
+      redirect: 'manual'
+    });
+    const json = upstream.ok ? await upstream.json().catch(() => null) : null;
+    const rows = Array.isArray(json?.data) ? json.data : [];
+    const ids = rows
+      .map((row) => (typeof row === 'string' ? row : row?.id))
+      .filter(Boolean)
+      .map(String);
+    modelsCache.set(cacheKey, { at: Date.now(), ids });
+    return ids;
+  } catch {
+    modelsCache.set(cacheKey, { at: Date.now(), ids: [] });
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function discoveredModels() {
+  const seen = new Set();
+  const probes = [];
+  for (const key of state.keys) {
+    if (key.status !== 'active' || !key.baseUrl) continue;
+    const id = `${key.provider}|${key.baseUrl}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    probes.push(key);
+    if (probes.length === MODELS_PROBE_LIMIT) break;
+  }
+  const lists = await Promise.all(probes.map((key) => upstreamModels(key)));
+  return [...new Set(lists.flat())];
+}
+
+async function modelsPayload(client, format) {
   const ids = new Set([
     ...(state.settings.models || []),
     ...Object.keys(state.settings.aliases || {}),
     ...state.keys.map((k) => k.model).filter(Boolean)
   ]);
+  if (!ids.size) {
+    for (const id of await discoveredModels()) ids.add(id);
+  }
   const list = [...ids].filter((id) => clientAllowsModel(client, id));
   if (format === 'anthropic') {
     const data = list.map((id) => ({ id, type: 'model', display_name: id, created_at: new Date(0).toISOString() }));
@@ -433,7 +492,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
   const { client } = auth;
 
   if (path === '/v1/models') {
-    sendJson(res, 200, modelsPayload(client, clientFormat));
+    sendJson(res, 200, await modelsPayload(client, clientFormat));
     return;
   }
 
@@ -662,7 +721,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
         'content-type': 'text/event-stream; charset=utf-8',
         'cache-control': 'no-cache, no-transform',
         connection: 'keep-alive',
-        'x-hydra-key': key.label
+        'x-hydra-key': headerSafe(key.label)
       });
       res.end(
         clientFormat === 'anthropic' ? syntheticAnthropicStream(outBody, model) : syntheticOpenAIStream(outBody, model)
@@ -675,7 +734,7 @@ export async function handleProxy(req, res, url, bodyBuf) {
       'content-type': 'application/json; charset=utf-8',
       'content-length': out.length,
       'cache-control': 'no-store',
-      'x-hydra-key': key.label,
+      'x-hydra-key': headerSafe(key.label),
       'x-hydra-provider': key.provider,
       'x-hydra-attempts': String(attempts)
     });

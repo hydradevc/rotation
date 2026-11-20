@@ -238,7 +238,7 @@ provider, base URL or the secret itself. Bulk actions (enable, disable, delete) 
 | `POST` | `/v1/embeddings` | OpenAI embeddings |
 | `POST` | `/v1/messages` | Anthropic messages, streaming included |
 | `POST` | `/v1/messages/count_tokens` | Anthropic token counting |
-| `GET` | `/v1/models` | Models advertised in settings (OpenAI and Anthropic shapes) |
+| `GET` | `/v1/models` | Models advertised in settings, or discovered from the pool when that list is empty (OpenAI and Anthropic shapes) |
 | `GET` | `/healthz` | Liveness |
 | `GET` | `/readyz` | Readiness: pool healthy, state writable |
 | `GET` | `/metrics` | Prometheus exposition (protected unless enabled) |
@@ -302,7 +302,7 @@ All of it lives in **Settings** in the panel.
 ## Tests
 
 ```bash
-npm test            # 36 backend + 43 security checks
+npm test            # 38 backend + 43 security checks
 npm run test:ui     # 32 panel checks, self-hosted server + Chromium
 npm run test:security  # encryption, cookies, CSRF, budgets, aborts
 npm run bench       # 100 keys, 2,000 requests
@@ -383,6 +383,6 @@ node server.js        # зависимостей нет, npm install не нуж
 с лимитами, песочница, аналитика с перцентилями, `GET /metrics` для Prometheus,
 `GET /openapi.json`, вебхуки в Discord/Slack, бэкап и восстановление, панель на русском.
 
-Тесты: `npm test` (36 бэкенд + 43 безопасность), `npm run test:ui` (32 проверки), `npm run bench`.
+Тесты: `npm test` (38 бэкенд + 43 безопасность), `npm run test:ui` (32 проверки), `npm run bench`.
 
 </details>

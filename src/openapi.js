@@ -88,7 +88,7 @@ export function openapiSpec() {
         }
       },
       '/v1/models': {
-        get: { summary: 'List advertised models', security: [{ bearerAuth: [] }], responses: { 200: { description: 'Model list' } } }
+        get: { summary: 'List available models', security: [{ bearerAuth: [] }], responses: { 200: { description: 'Model list' } } }
       },
       '/metrics': {
         get: { summary: 'Prometheus metrics', security: [], responses: { 200: { description: 'Prometheus text format' } } }
